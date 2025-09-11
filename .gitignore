@@ -52,3 +52,72 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userprefs
+*.log
+*.bak
+*.ncb
+*.scc
+*.vssscc
+*.vsscc
+*.vspscc
+*.opendb
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+*.pdb
+*.ilk
+*.aps
+*.bsc
+*.idb
+*.lib
+*.ncb
+*.res
+*.sbr
+*.tlb
+*.tlh
+*.tti
+*.tmp
+*.vspscc
+*.vssscc
+*.wrn
+*.codeanalysis
+*.fxb
+*.fxcop
+
+# ReSharper
+*.resharper
+*.dotSettings
+_ReSharper.*/
+
+# NCrunch
+*.ncrunchsolution
+*.ncrunchproject
+
+# StyleCop
+StyleCop.Cache
+
+# Visual Studio Code
+.vscode/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+*.lock.json
+
+# Test results
+TestResults/
+*.trx
+
+# Miscellaneous
+Thumbs.db
+ehthumbs.db
+Desktop.ini
