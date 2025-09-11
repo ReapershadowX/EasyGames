@@ -18,20 +18,39 @@ namespace EasyGames.Controllers
             _context = context; // Inject the database context via DI
         }
 
+        // GET: /Home/Index or /
+        // Landing page action; checks database connectivity status and passes message to view
         public IActionResult Index()
         {
-            // Test the database connection; canConnect will be true if connection succeeds
             bool canConnect = _context.Database.CanConnect();
             ViewBag.DatabaseStatus = canConnect ? "Connected to Database" : "Database Connection Failed";
-
             return View();
         }
 
+        // GET: /Home/About
+        // Displays the About page with informational message
+        public IActionResult About()
+        {
+            ViewData["Message"] = "Your application description page.";
+            return View();
+        }
+
+        // GET: /Home/Contact
+        // Displays the Contact page with informational message
+        public IActionResult Contact()
+        {
+            ViewData["Message"] = "Your contact page.";
+            return View();
+        }
+
+        // GET: /Home/Privacy
+        // Privacy policy page (existing)
         public IActionResult Privacy()
         {
             return View();
         }
 
+        // Error page with no caching; uses ErrorViewModel for tracking
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
