@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
@@ -14,18 +13,21 @@ namespace EasyGames.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+        // Inject ApplicationDbContext via constructor for data access
         public UsersController(ApplicationDbContext context)
         {
             _context = context;
         }
 
         // GET: Users
+        // Retrieves all users asynchronously and passes to the Index view
         public async Task<IActionResult> Index()
         {
             return View(await _context.Users.ToListAsync());
         }
 
         // GET: Users/Details/5
+        // Displays details of a specific user by ID; returns 404 if not found
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -35,6 +37,7 @@ namespace EasyGames.Controllers
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(m => m.UserId == id);
+
             if (user == null)
             {
                 return NotFound();
@@ -44,20 +47,25 @@ namespace EasyGames.Controllers
         }
 
         // GET: Users/Create
+        // Returns the view to create a new user (admin use)
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // Protects from overposting attacks by binding only allowed properties
+        // Password hashing should be applied here (to add)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserId,FirstName,LastName,Email,Password,Role,CreatedDate")] User user)
+        public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Password,Role")] User user)
         {
             if (ModelState.IsValid)
             {
+                user.CreatedDate = DateTime.Now; // Set creation date server-side
+
+                // TODO: Hash user.Password here for security before saving
+
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -66,6 +74,7 @@ namespace EasyGames.Controllers
         }
 
         // GET: Users/Edit/5
+        // Returns the view to edit an existing user by ID
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -82,8 +91,8 @@ namespace EasyGames.Controllers
         }
 
         // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // Protects from overposting by binding allowed properties including ID and CreatedDate
+        // Password hashing should be handled if password is modified (to add)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("UserId,FirstName,LastName,Email,Password,Role,CreatedDate")] User user)
@@ -97,6 +106,8 @@ namespace EasyGames.Controllers
             {
                 try
                 {
+                    // TODO: Hash user.Password here if it has been changed
+
                     _context.Update(user);
                     await _context.SaveChangesAsync();
                 }
@@ -117,6 +128,7 @@ namespace EasyGames.Controllers
         }
 
         // GET: Users/Delete/5
+        // Returns the view to confirm deletion of a user by ID
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -126,6 +138,7 @@ namespace EasyGames.Controllers
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(m => m.UserId == id);
+
             if (user == null)
             {
                 return NotFound();
@@ -135,6 +148,7 @@ namespace EasyGames.Controllers
         }
 
         // POST: Users/Delete/5
+        // Removes the specified user and saves changes
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -144,11 +158,11 @@ namespace EasyGames.Controllers
             {
                 _context.Users.Remove(user);
             }
-
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
+        // Utility method to check if a user with the given ID exists
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UserId == id);
