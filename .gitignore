@@ -121,3 +121,6 @@ TestResults/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Local SQLite database file
+*.db
