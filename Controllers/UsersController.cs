@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
+using Microsoft.AspNetCore.Identity; // For PasswordHasher
 
 namespace EasyGames.Controllers
 {
     public class UsersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
 
         // Inject ApplicationDbContext via constructor for data access
         public UsersController(ApplicationDbContext context)
@@ -34,15 +36,12 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
-
             var user = await _context.Users
                 .FirstOrDefaultAsync(m => m.UserId == id);
-
             if (user == null)
             {
                 return NotFound();
             }
-
             return View(user);
         }
 
@@ -55,7 +54,7 @@ namespace EasyGames.Controllers
 
         // POST: Users/Create
         // Protects from overposting attacks by binding only allowed properties
-        // Password hashing should be applied here (to add)
+        // Hashes user password before saving
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Password,Role")] User user)
@@ -63,9 +62,8 @@ namespace EasyGames.Controllers
             if (ModelState.IsValid)
             {
                 user.CreatedDate = DateTime.Now; // Set creation date server-side
-
-                // TODO: Hash user.Password here for security before saving
-
+                // Hash user.Password for security before saving
+                user.Password = _passwordHasher.HashPassword(user, user.Password);
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -81,7 +79,6 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
-
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
@@ -92,7 +89,7 @@ namespace EasyGames.Controllers
 
         // POST: Users/Edit/5
         // Protects from overposting by binding allowed properties including ID and CreatedDate
-        // Password hashing should be handled if password is modified (to add)
+        // Hashes password if modified before saving
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("UserId,FirstName,LastName,Email,Password,Role,CreatedDate")] User user)
@@ -101,13 +98,12 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // TODO: Hash user.Password here if it has been changed
-
+                    // Hash user.Password before saving edits to ensure security
+                    user.Password = _passwordHasher.HashPassword(user, user.Password);
                     _context.Update(user);
                     await _context.SaveChangesAsync();
                 }
@@ -135,15 +131,12 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
-
             var user = await _context.Users
                 .FirstOrDefaultAsync(m => m.UserId == id);
-
             if (user == null)
             {
                 return NotFound();
             }
-
             return View(user);
         }
 
