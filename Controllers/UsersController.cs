@@ -50,6 +50,7 @@ namespace EasyGames.Controllers
         // Returns the view to create a new user (admin use)
         public IActionResult Create()
         {
+            ViewBag.Roles = new List<string> { "User", "Admin", "Moderator" };
             return View();
         }
 
