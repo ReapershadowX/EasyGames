@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
+using EasyGamesProject.ViewModels; // For RegisterViewModel
 using Microsoft.AspNetCore.Identity; // For PasswordHasher
 
 namespace EasyGames.Controllers
@@ -159,6 +160,58 @@ namespace EasyGames.Controllers
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UserId == id);
+        }
+
+        // GET: Users/Register
+        // Displays the registration form for public user signup
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Users/Register
+        // Processes registration data, validates, checks for email duplicates,
+        // hashes password, and saves new user
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Server-side email uniqueness check
+            bool emailExists = _context.Users.Any(u => u.Email == model.Email);
+            if (emailExists)
+            {
+                ModelState.AddModelError("Email", "This email is already registered.");
+                return View(model);
+            }
+
+            var user = new User
+            {
+                FirstName = model.FirstName!, // Assumed non-null due to ModelState.IsValid check
+                LastName = model.LastName!, // Assumed non-null due to ModelState.IsValid check
+                Email = model.Email!, // Assumed non-null and valid email because of validation attributes
+                Role = "User", // Default role for new registrations
+                CreatedDate = DateTime.Now
+            };
+
+            // Hash the password before saving
+            // Password is non-null here because ModelState.IsValid ensures validation passed
+            user.Password = _passwordHasher.HashPassword(user, model.Password!);
+
+            user.Password = _passwordHasher.HashPassword(user, model.Password!);
+
+            _context.Add(user);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Registration successful! You can now log in.";
+
+            // Redirect to Login page or home after successful registration
+
+            // TO TO:
+            return RedirectToAction("Login", "Account"); // Adjust as per your routing
         }
     }
 }
