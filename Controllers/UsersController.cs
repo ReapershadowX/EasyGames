@@ -86,6 +86,7 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
+            ViewBag.Roles = new List<string> { "User", "Admin", "Moderator" };
             return View(user);
         }
 
