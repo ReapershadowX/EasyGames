@@ -42,7 +42,6 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
-
             return View(stock);
         }
 
@@ -50,6 +49,8 @@ namespace EasyGames.Controllers
         // Returns the view to create a new stock item
         public IActionResult Create()
         {
+            // Pass allowed categories to the view for dropdown selection
+            ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View();
         }
 
@@ -67,6 +68,8 @@ namespace EasyGames.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            // If validation fails, repopulate categories for the dropdown
+            ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View(stock);
         }
 
@@ -84,6 +87,8 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
+            // Pass allowed categories to the view for dropdown
+            ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View(stock);
         }
 
@@ -119,6 +124,8 @@ namespace EasyGames.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            // Repopulate categories if validation fails
+            ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View(stock);
         }
 
