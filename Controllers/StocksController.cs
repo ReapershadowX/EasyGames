@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
+using System.IO;                     // For file handling
+using Microsoft.AspNetCore.Http;     // For IFormFile
 
 namespace EasyGames.Controllers
 {
@@ -20,24 +22,20 @@ namespace EasyGames.Controllers
         }
 
         // GET: Stocks
-        // Retrieves all stock items asynchronously and passes to the Index view
         public async Task<IActionResult> Index()
         {
             return View(await _context.Stocks.ToListAsync());
         }
 
         // GET: Stocks/Details/5
-        // Displays details of a specific stock item by ID; returns 404 if not found
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
             var stock = await _context.Stocks
                 .FirstOrDefaultAsync(m => m.StockId == id);
-
             if (stock == null)
             {
                 return NotFound();
@@ -46,70 +44,118 @@ namespace EasyGames.Controllers
         }
 
         // GET: Stocks/Create
-        // Returns the view to create a new stock item
         public IActionResult Create()
         {
-            // Pass allowed categories to the view for dropdown selection
             ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View();
         }
 
         // POST: Stocks/Create
-        // Protects from overposting attacks by binding only allowed properties
-        // Sets CreatedDate server-side before saving
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Category,Price,Quantity,Description")] Stock stock)
+        // Added parameter ImageFiles to accept uploaded images
+        public async Task<IActionResult> Create([Bind("Name,Category,Price,Quantity,Description")] Stock stock, List<IFormFile> ImageFiles)
         {
             if (ModelState.IsValid)
             {
                 stock.CreatedDate = DateTime.Now; // Set CreatedDate here to current time
                 _context.Add(stock);
                 await _context.SaveChangesAsync();
+
+                // Handle image files if any uploaded
+                if (ImageFiles != null && ImageFiles.Count > 0)
+                {
+                    foreach (var image in ImageFiles)
+                    {
+                        if (image.Length > 0)
+                        {
+                            // Create unique filename using GUID to avoid conflicts
+                            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                            // Define the path to save the file
+                            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
+
+                            // Save the uploaded file to the server
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await image.CopyToAsync(stream);
+                            }
+
+                            // Create StockImage record linked to this stock
+                            var stockImage = new StockImage
+                            {
+                                StockId = stock.StockId,
+                                ImageUrl = "/images/" + fileName
+                            };
+                            _context.StockImages.Add(stockImage);
+                        }
+                    }
+                    // Save all StockImage records to the database
+                    await _context.SaveChangesAsync();
+                }
                 return RedirectToAction(nameof(Index));
             }
-            // If validation fails, repopulate categories for the dropdown
             ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View(stock);
         }
 
         // GET: Stocks/Edit/5
-        // Returns the view to edit an existing stock item by ID
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
             var stock = await _context.Stocks.FindAsync(id);
             if (stock == null)
             {
                 return NotFound();
             }
-            // Pass allowed categories to the view for dropdown
             ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View(stock);
         }
 
         // POST: Stocks/Edit/5
-        // Protects from overposting by binding allowed properties including the ID and CreatedDate
-        // Handles concurrency exceptions gracefully
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("StockId,Name,Category,Price,Quantity,Description,CreatedDate")] Stock stock)
+        // Added ImageFiles parameter to accept uploaded images during edit
+        public async Task<IActionResult> Edit(int id, [Bind("StockId,Name,Category,Price,Quantity,Description,CreatedDate")] Stock stock, List<IFormFile> ImageFiles)
         {
             if (id != stock.StockId)
             {
                 return NotFound();
             }
-
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(stock);
                     await _context.SaveChangesAsync();
+
+                    // Handle new image uploads if any
+                    if (ImageFiles != null && ImageFiles.Count > 0)
+                    {
+                        foreach (var image in ImageFiles)
+                        {
+                            if (image.Length > 0)
+                            {
+                                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
+
+                                using (var stream = new FileStream(filePath, FileMode.Create))
+                                {
+                                    await image.CopyToAsync(stream);
+                                }
+
+                                var stockImage = new StockImage
+                                {
+                                    StockId = stock.StockId,
+                                    ImageUrl = "/images/" + fileName
+                                };
+                                _context.StockImages.Add(stockImage);
+                            }
+                        }
+                        await _context.SaveChangesAsync();
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -124,33 +170,27 @@ namespace EasyGames.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            // Repopulate categories if validation fails
             ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View(stock);
         }
 
         // GET: Stocks/Delete/5
-        // Returns the view to confirm deletion of stock item by ID
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
             var stock = await _context.Stocks
                 .FirstOrDefaultAsync(m => m.StockId == id);
-
             if (stock == null)
             {
                 return NotFound();
             }
-
             return View(stock);
         }
 
         // POST: Stocks/Delete/5
-        // Removes the specified stock item and saves changes
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -164,7 +204,6 @@ namespace EasyGames.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Utility method to check if a stock with the given ID exists
         private bool StockExists(int id)
         {
             return _context.Stocks.Any(e => e.StockId == id);
