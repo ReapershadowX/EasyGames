@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization; // Added for Authorize attribute
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
@@ -25,68 +26,171 @@ namespace EasyGames.Controllers
             _context = context;
         }
 
-        // Existing actions (Index, Details, Create, Edit, Delete, Register) unchanged
+        // Only Admins can access the users list
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Users.ToListAsync());
+        }
 
-        // Login/Logout Actions
+        // Admin, Moderators & Users can see details
+        [Authorize(Roles = "Admin, Moderator,User")]
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.UserId == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
 
-        // GET: Users/Login
-        // Displays login form
+        // Admin-only access for creating users
+        [Authorize(Roles = "Admin")]
+        public IActionResult Create()
+        {
+            ViewBag.Roles = new List<string> { "User", "Admin", "Moderator" };
+            return View();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Password,Role")] User user)
+        {
+            if (ModelState.IsValid)
+            {
+                user.CreatedDate = DateTime.Now;
+                user.Password = _passwordHasher.HashPassword(user, user.Password);
+                _context.Add(user);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(user);
+        }
+
+        // Admin & Moderator-only access for editing users
+        [Authorize(Roles = "Admin, Moderator")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            ViewBag.Roles = new List<string> { "User", "Admin", "Moderator" };
+            return View(user);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("UserId,FirstName,LastName,Email,Password,Role,CreatedDate")] User user)
+        {
+            if (id != user.UserId)
+            {
+                return NotFound();
+            }
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    user.Password = _passwordHasher.HashPassword(user, user.Password);
+                    _context.Update(user);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!UserExists(user.UserId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(user);
+        }
+
+        // Admin-only access for deleting users
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.UserId == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Allow anonymous access for Login and Register actions
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // POST: Users/Login
-        // Processes login credentials, validates user,
-        // creates claims including role claim, and signs in
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
-
-            // Find user by email
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
             if (user == null)
             {
                 ModelState.AddModelError("", "Invalid login attempt.");
                 return View(model);
             }
-
-            // Verify password
-            var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, model.Password);
+            var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, model.Password!);
             if (verificationResult == PasswordVerificationResult.Failed)
             {
                 ModelState.AddModelError("", "Invalid login attempt.");
                 return View(model);
             }
-
-            // Create claims for identity including role claim
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Email), // Can use user.FullName if added
+                new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.Role, user.Role)
             };
-
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = true // optional, for "remember me"
-            };
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity),
-                authProperties);
-
-            return RedirectToAction("Index", "Home"); // Redirect after successful login
+            var authProperties = new AuthenticationProperties { IsPersistent = true };
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+            return RedirectToAction("Index", "Home");
         }
 
-        // POST: Users/Logout
-        // Signs the user out
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -95,45 +199,42 @@ namespace EasyGames.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // Existing Registration actions, unchanged aside from redirect fix
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
-
             bool emailExists = _context.Users.Any(u => u.Email == model.Email);
             if (emailExists)
             {
                 ModelState.AddModelError("Email", "This email is already registered.");
                 return View(model);
             }
-
             var user = new User
             {
                 FirstName = model.FirstName!,
                 LastName = model.LastName!,
                 Email = model.Email!,
-                Role = "User", // default
+                Role = "User", // default role
                 CreatedDate = DateTime.Now
             };
-
             user.Password = _passwordHasher.HashPassword(user, model.Password!);
             _context.Add(user);
             await _context.SaveChangesAsync();
-
             TempData["SuccessMessage"] = "Registration successful! You can now log in.";
-            return RedirectToAction("Login"); // Redirect to login within same controller
+            return RedirectToAction("Login");
         }
 
-
+        // Utility method to check if user exists
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UserId == id);

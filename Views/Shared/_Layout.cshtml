@@ -26,26 +26,55 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Stocks" asp-action="Index">Stocks</a>
                         </li>
-                        @* Safely check if user is authenticated to avoid null reference warnings *@
+
+                        @* Check if the user is authenticated *@
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
+                            @* Visible to all authenticated users *@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a>
                             </li>
+
+                            @* Admin-only menu item *@
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                                </li>
+                            }
+
+                            @* Moderator-only menu item (example) *@
+                            @if (User.IsInRole("Moderator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Moderator" asp-action="Index">Moderator Panel</a>
+                                </li>
+                            }
+
+                            @* User-only menu item *@
+                            @if (User.IsInRole("User"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Profile" asp-action="Index">My Profile</a>
+                                </li>
+                            }
                         }
+
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+
                     <ul class="navbar-nav">
-                        @* Null-safe check for authentication *@
+                        @* Null-safe check for authentication and display greeting and logout *@
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" href="#">Hello @User.Identity.Name!</a>
                             </li>
                             <li class="nav-item">
-                                <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                @* Updated logout form to post to UsersController Logout action *@
+                                <form class="form-inline" asp-area="" asp-controller="Users" asp-action="Logout" method="post" id="logoutForm">
                                     <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
                                 </form>
                             </li>
@@ -53,7 +82,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Login">Login</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Register">Register</a>
@@ -64,16 +93,19 @@
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - EasyGames - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
