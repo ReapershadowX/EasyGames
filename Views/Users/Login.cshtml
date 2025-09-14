@@ -1,29 +1,29 @@
 ﻿@model EasyGamesProject.ViewModels.LoginViewModel
-
 @{
     ViewData["Title"] = "Login";
 }
+<div class="form-center-wrapper">
+    <h2 class="mb-4 text-center">Login</h2>
+    <form asp-action="Login" method="post" class="w-100" style="max-width: 400px;">
+        @* Conditionally render validation summary only if there are errors to avoid empty alert box *@
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger"></div>
+        }
 
-<h2>Login</h2>
-
-<form asp-action="Login" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
-
-    <div class="mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Log in</button>
-</form>
-
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Log in</button>
+    </form>
+</div>
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

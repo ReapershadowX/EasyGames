@@ -1,9 +1,9 @@
-﻿@using System.Linq
+﻿@using Microsoft.EntityFrameworkCore
+@using System.Linq
 @inject EasyGamesProject.Data.ApplicationDbContext _context
 
 @{
     ViewData["Title"] = "Home";
-
     // Get user role if authenticated
     string? userRole = null;
     if (User.Identity?.IsAuthenticated == true)
@@ -21,26 +21,22 @@
             userRole = "User";
         }
     }
-
     // Get featured products for regular user: one per category, only if user is logged in and role is User (not Admin/Mod)
     var featuredBooks = new List<EasyGamesProject.Models.Stock>();
     var featuredGames = new List<EasyGamesProject.Models.Stock>();
     var featuredToys = new List<EasyGamesProject.Models.Stock>();
-
     if (userRole == "User")
     {
-        featuredBooks = _context.Stocks.Where(s => s.Category == "Book").Take(1).ToList();
-        featuredGames = _context.Stocks.Where(s => s.Category == "Game").Take(1).ToList();
-        featuredToys = _context.Stocks.Where(s => s.Category == "Toy").Take(1).ToList();
+        featuredBooks = _context.Stocks.Where(s => s.Category == "Book").Include(s => s.Images).Take(1).ToList();
+        featuredGames = _context.Stocks.Where(s => s.Category == "Game").Include(s => s.Images).Take(1).ToList();
+        featuredToys = _context.Stocks.Where(s => s.Category == "Toy").Include(s => s.Images).Take(1).ToList();
     }
 }
-
 <div class="container mt-4">
     <div class="jumbotron text-center bg-light p-4 rounded">
         <h1 class="display-4">Welcome to EasyGames</h1>
         <p class="lead">Your one-stop shop for Books, Games, and Toys!</p>
         <p>@ViewBag.DatabaseStatus</p>
-
         @if (!User.Identity?.IsAuthenticated ?? true)
         {
             @* User not logged in: show Login/Register buttons *@
@@ -58,51 +54,52 @@
             <a class="btn btn-primary btn-lg m-2" asp-controller="Stocks" asp-action="Index">Browse Stock</a>
         }
     </div>
-
     @if (userRole == "User")
     {
         <h3 class="mt-5 mb-4">Featured Products</h3>
         <div class="row">
-            @* Show one book if available *@
+            @* Show one book if available with updated CSS classes *@
             @foreach (var item in featuredBooks)
             {
                 <div class="col-md-3">
-                    <div class="card mb-4 shadow-sm">
-                        <img src="~/images/book-sample.jpg" class="card-img-top" alt="Book sample" />
-                        <div class="card-body">
+                    <div class="card stock-card shadow-sm">
+                        @* Display first uploaded image or fallback with new CSS class *@
+                        <img src="@item.Images?.FirstOrDefault()?.ImageUrl ?? " /images/default-thumbnail.jpg"" class="card-img-top" alt="@item.Name" />
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@item.Name</h5>
-                            <p class="card-text">@item.Price.ToString("C")</p>
-                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary">View Details</a>
+                            <p class="card-category text-muted mb-1">@item.Category</p>
+                            <p class="card-price fw-bold mb-3">@item.Price.ToString("C")</p>
+                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary mt-auto align-self-start">View Details</a>
                         </div>
                     </div>
                 </div>
             }
-
-            @* Show one game if available *@
+            @* Show one game if available with updated CSS classes *@
             @foreach (var item in featuredGames)
             {
                 <div class="col-md-3">
-                    <div class="card mb-4 shadow-sm">
-                        <img src="~/images/game-sample.jpg" class="card-img-top" alt="Game sample" />
-                        <div class="card-body">
+                    <div class="card stock-card shadow-sm">
+                        <img src="@item.Images?.FirstOrDefault()?.ImageUrl ?? " /images/default-thumbnail.jpg"" class="card-img-top" alt="@item.Name" />
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@item.Name</h5>
-                            <p class="card-text">@item.Price.ToString("C")</p>
-                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary">View Details</a>
+                            <p class="card-category text-muted mb-1">@item.Category</p>
+                            <p class="card-price fw-bold mb-3">@item.Price.ToString("C")</p>
+                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary mt-auto align-self-start">View Details</a>
                         </div>
                     </div>
                 </div>
             }
-
-            @* Show one toy if available *@
+            @* Show one toy if available with updated CSS classes *@
             @foreach (var item in featuredToys)
             {
                 <div class="col-md-3">
-                    <div class="card mb-4 shadow-sm">
-                        <img src="~/images/toy-sample.jpg" class="card-img-top" alt="Toy sample" />
-                        <div class="card-body">
+                    <div class="card stock-card shadow-sm">
+                        <img src="@item.Images?.FirstOrDefault()?.ImageUrl ?? " /images/default-thumbnail.jpg"" class="card-img-top" alt="@item.Name" />
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@item.Name</h5>
-                            <p class="card-text">@item.Price.ToString("C")</p>
-                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary">View Details</a>
+                            <p class="card-category text-muted mb-1">@item.Category</p>
+                            <p class="card-price fw-bold mb-3">@item.Price.ToString("C")</p>
+                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary mt-auto align-self-start">View Details</a>
                         </div>
                     </div>
                 </div>

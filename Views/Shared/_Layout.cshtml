@@ -5,20 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EasyGames</title>
     <script type="importmap"></script>
+
+    @* Existing Bootstrap CSS included for layout and styling *@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @* Include base styles (typography, colors, resets) *@
+    <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
+
+    @* Include layout-specific styles (navbar, containers, grids) *@
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+
+    @* Include component styles (cards, buttons, forms, alerts) *@
+    <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+
+    @* Include page-specific styles for Home, Stocks, etc. *@
+    <link rel="stylesheet" href="~/css/pages.css" asp-append-version="true" />
+
+    @* Include theme styles such as dark mode (optional) *@
+    <link rel="stylesheet" href="~/css/themes.css" asp-append-version="true" />
+
+    @* Existing custom stylesheet if still needed, keep or remove based on overlap *@
     <link rel="stylesheet" href="~/EasyGames.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
+
+                @* Brand logo linking to Home page *@
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">EasyGames</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between" id="navbarSupportedContent">
+
+                    @* Primary navigation links *@
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
@@ -27,7 +50,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Stocks" asp-action="Index">Stocks</a>
                         </li>
 
-                        @* Show Add Stock link only for Admins *@
+                        @* Admin-only Add Stock link *@
                         @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
@@ -35,7 +58,7 @@
                             </li>
                         }
 
-                        @* Show Users management link only for Admin role *@
+                        @* Admin-only Users management link *@
                         @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
@@ -43,11 +66,11 @@
                             </li>
                         }
 
-                        @* Show My Profile link to all authenticated users for editing their own profiles *@
+                        @* Authenticated user's profile edit link *@
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                @* Assuming you include user ID claim as NameIdentifier on login *@
+                                @* Use NameIdentifier claim to route to profile edit *@
                                 <a class="nav-link text-dark" asp-controller="Users" asp-action="Edit" asp-route-id="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">My Profile</a>
                             </li>
                         }
@@ -56,6 +79,8 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+
+                    @* User authentication links and greeting *@
                     <ul class="navbar-nav">
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
@@ -82,19 +107,24 @@
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - EasyGames - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
+    @* JavaScript references *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

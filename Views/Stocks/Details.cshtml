@@ -1,86 +1,88 @@
 ﻿@model EasyGamesProject.Models.Stock
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Stock Details";
 }
-<h1>Details</h1>
-<div>
-    <h4>Stock</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Category)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Quantity)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Quantity)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-    </dl>
-</div>
+<div class="form-center-wrapper" style="max-width: 800px; width: 100%;">
+    <h1 class="mb-4">Stock Details</h1>
 
-<!-- Display stock images if any -->
-@if (Model.Images != null && Model.Images.Any())
-{
-    <h4>Images</h4>
-    <div class="row">
-        @foreach (var image in Model.Images)
+    <div class="mb-4">
+        <h4>Stock</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3 fw-semibold">
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Name)
+            </dd>
+            <dt class="col-sm-3 fw-semibold">
+                @Html.DisplayNameFor(model => model.Category)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Category)
+            </dd>
+            <dt class="col-sm-3 fw-semibold">
+                @Html.DisplayNameFor(model => model.Price)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Price)
+            </dd>
+            <dt class="col-sm-3 fw-semibold">
+                @Html.DisplayNameFor(model => model.Quantity)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Quantity)
+            </dd>
+            <dt class="col-sm-3 fw-semibold">
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+            <dt class="col-sm-3 fw-semibold">
+                @Html.DisplayNameFor(model => model.CreatedDate)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.CreatedDate)
+            </dd>
+        </dl>
+    </div>
+
+    @* Display stock images *@
+    @if (Model.Images != null && Model.Images.Any())
+    {
+        <h4>Images</h4>
+        <div class="row mb-4">
+            @foreach (var image in Model.Images)
+            {
+                <div class="col-6 col-md-3 mb-3">
+                    <img src="@image.ImageUrl" alt="Stock Image" class="img-thumbnail" style="max-height: 150px; width: auto;" />
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p><em>No images available for this stock item.</em></p>
+    }
+
+    <div class="d-flex flex-wrap gap-3">
+        @* Show Edit link only to Admins and Moderators *@
+        @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Moderator")))
         {
-            <div class="col-md-3 mb-3">
-                <img src="@image.ImageUrl" alt="Stock Image" class="img-thumbnail" style="max-height:150px; width:auto;" />
-            </div>
+            <a asp-action="Edit" asp-route-id="@Model?.StockId" class="btn btn-primary">Edit</a>
+        }
+
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+
+        @* Add to Cart form visible only to authenticated Users in "User" role *@
+        @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("User"))
+        {
+            <form asp-controller="ShoppingCarts" asp-action="AddToCart" method="post" class="d-inline">
+                <input type="hidden" name="stockId" value="@Model?.StockId" />
+                <input type="hidden" name="quantity" value="1" />
+                <button type="submit" class="btn btn-success">Add to Cart</button>
+            </form>
         }
     </div>
-}
-else
-{
-    <p><em>No images available for this stock item.</em></p>
-}
-<div>
-    @* Show Edit link only to Admins and Moderators *@
-    @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Moderator")))
-    {
-        <a asp-action="Edit" asp-route-id="@Model?.StockId">Edit</a>
-        <text> | </text>
-    }
-    <a asp-action="Index" style="margin-right:10px;">Back to List</a>
-
-    @* Add to Cart form visible only to authenticated Users in "User" role *@
-    @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("User"))
-    {
-        <form asp-controller="ShoppingCarts" asp-action="AddToCart" method="post" style="display:inline;">
-            <input type="hidden" name="stockId" value="@Model?.StockId" />
-            <input type="hidden" name="quantity" value="1" />
-            <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
-                Add to Cart
-            </button>
-        </form>
-    }
 </div>

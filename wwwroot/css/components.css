@@ -4,22 +4,38 @@
 
 /* Buttons */
 .btn-primary {
-    background-color: var(--color-primary);
-    color: white;
+    background-color: #007bff; /* Bootstrap blue */
+    color: white; /* White text for good contrast */
+    border: none;
+    transition: background-color 0.3s ease;
 }
 
-    .btn-primary:hover {
-        background-color: #1558b0;
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active {
+        background-color: #0056b3; /* Darker blue on hover/focus/active */
+        color: white;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5); /* Visible blue focus ring */
     }
+
 
 .btn-secondary {
     background-color: var(--color-secondary);
     color: var(--color-text-dark);
+    border: none;
+    transition: background-color 0.3s ease;
 }
 
-    .btn-secondary:hover {
-        background-color: #d9a700;
+    .btn-secondary:hover,
+    .btn-secondary:focus,
+    .btn-secondary:active {
+        background-color: #d9a700; /* Darker gold on hover/focus/active */
+        color: var(--color-text-dark);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(251, 188, 5, 0.5);
     }
+
 
 /* Cards */
 .card {
@@ -98,3 +114,17 @@
     border-radius: 4px;
     margin-bottom: 1rem;
 }
+
+.form-center-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+    box-sizing: border-box;
+    /* Add top margin to offset content below navbar */
+    margin-top: -8rem; /* Adjust this value as needed */
+}
+
+
