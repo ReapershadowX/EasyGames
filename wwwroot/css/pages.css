@@ -1,0 +1,29 @@
+﻿/* pages.css */
+
+/* Home page welcome banner */
+.jumbotron {
+    background-color: var(--color-bg-light);
+    padding: 2rem 1rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .jumbotron h1 {
+        font-family: var(--font-family-heading);
+        color: var(--color-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .jumbotron .lead {
+        font-size: 1.25rem;
+        color: var(--color-text-medium);
+    }
+
+/* Stocks page: product cards grid */
+.stock-cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+}

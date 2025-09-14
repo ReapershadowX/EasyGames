@@ -1,0 +1,24 @@
+﻿@model EasyGamesProject.Models.Stock
+
+<div class="card stock-card shadow-sm">
+    @* Thumbnail image - first uploaded image or fallback *@
+    <img src="@Model.Images?.FirstOrDefault()?.ImageUrl ?? " /images/default-thumbnail.jpg""
+         alt="@Model.Name" class="card-img-top" />
+
+    <div class="card-body d-flex flex-column">
+        <h5 class="card-title">@Model.Name</h5>
+        <p class="card-category text-muted mb-1">@Model.Category</p>
+        <p class="card-price fw-bold mb-3">@Model.Price.ToString("C")</p>
+
+        @* Optional description truncated *@
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="card-description mb-3 text-truncate">@Model.Description</p>
+        }
+
+        <a asp-controller="Stocks" asp-action="Details" asp-route-id="@Model.StockId"
+           class="btn btn-primary mt-auto align-self-start">
+            View Details
+        </a>
+    </div>
+</div>

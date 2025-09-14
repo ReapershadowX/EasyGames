@@ -3,6 +3,7 @@ using EasyGames.Models;
 using Microsoft.AspNetCore.Mvc;
 using EasyGamesProject.Data; // Add namespace for DbContext
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore; // Needed for Include
 
 namespace EasyGames.Controllers
 {
@@ -19,38 +20,38 @@ namespace EasyGames.Controllers
         }
 
         // GET: /Home/Index or /
-        // Landing page action; checks database connectivity status and passes message to view
-        public IActionResult Index()
+        // Landing page action; loads featured products including their images
+        public async Task<IActionResult> Index()
         {
             bool canConnect = _context.Database.CanConnect();
             ViewBag.DatabaseStatus = canConnect ? "Connected to Database" : "Database Connection Failed";
-            return View();
+
+            // Eager load related images for each stock product
+            var featuredProducts = await _context.Stocks
+                .Include(s => s.Images)
+                .ToListAsync();
+
+            // Pass products to the view
+            return View(featuredProducts);
         }
 
-        // GET: /Home/About
-        // Displays the About page with informational message
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
             return View();
         }
 
-        // GET: /Home/Contact
-        // Displays the Contact page with informational message
         public IActionResult Contact()
         {
             ViewData["Message"] = "Your contact page.";
             return View();
         }
 
-        // GET: /Home/Privacy
-        // Privacy policy page (existing)
         public IActionResult Privacy()
         {
             return View();
         }
 
-        // Error page with no caching; uses ErrorViewModel for tracking
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
