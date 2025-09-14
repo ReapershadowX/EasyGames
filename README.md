@@ -1,16 +1,15 @@
 ﻿# EasyGamesProject
 
 
-# Credentials for existing Users
-# Admin : test@email.com
-# Password : password
+## Credentials for existing Users
+Admin : test@email.com
+Password : password
 
+Moderator : mod@email.com
+Password : password
 
-# Moderator : mod@email.com
-# Password : password
-
-# User : user@email.com
-# Password : password
+User : user@email.com
+Password : password
 
 EasyGamesProject is an **ASP.NET Core MVC web application** built with **.NET 8**, **Entity Framework Core**, and **SQL Server LocalDB**.  
 It provides functionality for stock management, user management, and a shopping cart system for purchasing items.
