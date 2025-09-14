@@ -35,6 +35,7 @@ namespace EasyGames.Controllers
                 return NotFound();
             }
             var stock = await _context.Stocks
+                .Include(s => s.Images) // Include related images
                 .FirstOrDefaultAsync(m => m.StockId == id);
             if (stock == null)
             {
