@@ -1,53 +1,69 @@
 ﻿@model EasyGamesProject.Models.Stock
-
 @{
     ViewData["Title"] = "Details";
 }
-
 <h1>Details</h1>
-
 <div>
     <h4>Stock</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Category)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Category)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Price)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Price)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Quantity)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Quantity)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CreatedDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.CreatedDate)
         </dd>
     </dl>
 </div>
+
+<!-- New section: display image thumbnails if any -->
+@if (Model.Images != null && Model.Images.Any())
+{
+    <h4>Images</h4>
+    <div class="row">
+        @foreach (var image in Model.Images)
+        {
+            <div class="col-md-3 mb-3">
+                <img src="@image.ImageUrl" alt="Stock Image" class="img-thumbnail" style="max-height:150px; width:auto;" />
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p><em>No images available for this stock item.</em></p>
+}
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.StockId">Edit</a> |
     <a asp-action="Index">Back to List</a>
