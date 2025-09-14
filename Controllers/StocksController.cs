@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
+using System.IO;                     // For file handling
+using Microsoft.AspNetCore.Http;     // For IFormFile
 
 namespace EasyGames.Controllers
 {
@@ -30,44 +32,70 @@ namespace EasyGames.Controllers
             return View(await _context.Stocks.ToListAsync());
         }
 
-        // Other GET actions omitted for brevity...
+        // GET: Stocks/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var stock = await _context.Stocks
+                .Include(s => s.Images) // Include related images
+                .FirstOrDefaultAsync(m => m.StockId == id);
+            if (stock == null)
+            {
+                return NotFound();
+            }
+            return View(stock);
+        }
 
-        // POST: Stocks/Create with image upload handling
+        // GET: Stocks/Create
+        public IActionResult Create()
+        {
+            ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
+            return View();
+        }
+
+        // POST: Stocks/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        // Added parameter ImageFiles to accept uploaded images
         public async Task<IActionResult> Create([Bind("Name,Category,Price,Quantity,Description")] Stock stock, List<IFormFile> ImageFiles)
         {
             if (ModelState.IsValid)
             {
                 stock.CreatedDate = DateTime.Now;
                 _context.Add(stock);
-                await _context.SaveChangesAsync(); // Save to generate StockId
+                await _context.SaveChangesAsync();
 
+                // Handle image files if any uploaded
                 if (ImageFiles != null && ImageFiles.Count > 0)
                 {
-                    foreach (var file in ImageFiles)
+                    foreach (var image in ImageFiles)
                     {
-                        if (file.Length > 0)
+                        if (image.Length > 0)
                         {
-                            var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images/stocks");
-                            Directory.CreateDirectory(uploadsFolder);
+                            // Create unique filename using GUID to avoid conflicts
+                            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                            // Define the path to save the file
+                            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
 
-                            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
+                            // Save the uploaded file to the server
                             using (var stream = new FileStream(filePath, FileMode.Create))
                             {
-                                await file.CopyToAsync(stream);
+                                await image.CopyToAsync(stream);
                             }
 
+                            // Create StockImage record linked to this stock
                             var stockImage = new StockImage
                             {
                                 StockId = stock.StockId,
-                                ImageUrl = "/images/stocks/" + uniqueFileName
+                                ImageUrl = "/images/" + fileName
                             };
                             _context.StockImages.Add(stockImage);
                         }
                     }
+                    // Save all StockImage records to the database
                     await _context.SaveChangesAsync();
                 }
                 return RedirectToAction(nameof(Index));
@@ -76,9 +104,26 @@ namespace EasyGames.Controllers
             return View(stock);
         }
 
-        // POST: Stocks/Edit with image upload handling
+        // GET: Stocks/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var stock = await _context.Stocks.FindAsync(id);
+            if (stock == null)
+            {
+                return NotFound();
+            }
+            ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
+            return View(stock);
+        }
+
+        // POST: Stocks/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        // Added ImageFiles parameter to accept uploaded images during edit
         public async Task<IActionResult> Edit(int id, [Bind("StockId,Name,Category,Price,Quantity,Description,CreatedDate")] Stock stock, List<IFormFile> ImageFiles)
         {
             if (id != stock.StockId)
@@ -92,27 +137,25 @@ namespace EasyGames.Controllers
                     _context.Update(stock);
                     await _context.SaveChangesAsync();
 
+                    // Handle new image uploads if any
                     if (ImageFiles != null && ImageFiles.Count > 0)
                     {
-                        foreach (var file in ImageFiles)
+                        foreach (var image in ImageFiles)
                         {
-                            if (file.Length > 0)
+                            if (image.Length > 0)
                             {
-                                var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images/stocks");
-                                Directory.CreateDirectory(uploadsFolder);
-
-                                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
 
                                 using (var stream = new FileStream(filePath, FileMode.Create))
                                 {
-                                    await file.CopyToAsync(stream);
+                                    await image.CopyToAsync(stream);
                                 }
 
                                 var stockImage = new StockImage
                                 {
                                     StockId = stock.StockId,
-                                    ImageUrl = "/images/stocks/" + uniqueFileName
+                                    ImageUrl = "/images/" + fileName
                                 };
                                 _context.StockImages.Add(stockImage);
                             }
@@ -135,6 +178,36 @@ namespace EasyGames.Controllers
             }
             ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View(stock);
+        }
+
+        // GET: Stocks/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var stock = await _context.Stocks
+                .FirstOrDefaultAsync(m => m.StockId == id);
+            if (stock == null)
+            {
+                return NotFound();
+            }
+            return View(stock);
+        }
+
+        // POST: Stocks/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var stock = await _context.Stocks.FindAsync(id);
+            if (stock != null)
+            {
+                _context.Stocks.Remove(stock);
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         private bool StockExists(int id)
