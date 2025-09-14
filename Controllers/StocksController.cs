@@ -3,90 +3,99 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;           // For IWebHostEnvironment
-using Microsoft.AspNetCore.Http;               // For IFormFile
+using Microsoft.AspNetCore.Authorization;            // For [Authorize] attribute to restrict access
+using Microsoft.AspNetCore.Hosting;                   // For IWebHostEnvironment to get web root path
+using Microsoft.AspNetCore.Http;                       // For IFormFile handling file uploads
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
-using System.IO;                     // For file handling
-using Microsoft.AspNetCore.Http;     // For IFormFile
 
 namespace EasyGames.Controllers
 {
     public class StocksController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _hostingEnvironment; // For file storage path
+        private readonly IWebHostEnvironment _hostingEnvironment; // For storing uploaded image files
 
-        // Inject ApplicationDbContext and IWebHostEnvironment via constructor
+        // Constructor injects ApplicationDbContext and IWebHostEnvironment
         public StocksController(ApplicationDbContext context, IWebHostEnvironment hostingEnvironment)
         {
             _context = context;
             _hostingEnvironment = hostingEnvironment;
         }
 
-        // GET: Stocks
+        // GET: Stocks - Allow anonymous access for browsing stocks
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
+            // Returns list of all stocks (without including images)
             return View(await _context.Stocks.ToListAsync());
         }
 
-        // GET: Stocks/Details/5
+        // GET: Stocks/Details/5 - Allow anonymous access to view details of a stock item
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
+
+            // Eager load related images for the stock item
             var stock = await _context.Stocks
-                .Include(s => s.Images) // Include related images
+                .Include(s => s.Images)
                 .FirstOrDefaultAsync(m => m.StockId == id);
+
             if (stock == null)
             {
                 return NotFound();
             }
+
             return View(stock);
         }
 
-        // GET: Stocks/Create
+        // GET: Stocks/Create - Only Admins can access Create page
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
+            // Provide categories to the Create view for dropdown selection
             ViewBag.Categories = new List<string> { "Book", "Game", "Toy" };
             return View();
         }
 
-        // POST: Stocks/Create
+        // POST: Stocks/Create - Only Admins can create stock items, and upload image files are processed
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // Added parameter ImageFiles to accept uploaded images
         public async Task<IActionResult> Create([Bind("Name,Category,Price,Quantity,Description")] Stock stock, List<IFormFile> ImageFiles)
         {
             if (ModelState.IsValid)
             {
                 stock.CreatedDate = DateTime.Now;
+
+                // Add stock entity and save to get StockId
                 _context.Add(stock);
                 await _context.SaveChangesAsync();
 
-                // Handle image files if any uploaded
+                // Process uploaded image files, if any
                 if (ImageFiles != null && ImageFiles.Count > 0)
                 {
                     foreach (var image in ImageFiles)
                     {
                         if (image.Length > 0)
                         {
-                            // Create unique filename using GUID to avoid conflicts
+                            // Generate unique file name
                             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-                            // Define the path to save the file
                             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
 
-                            // Save the uploaded file to the server
+                            // Save file to wwwroot/images
                             using (var stream = new FileStream(filePath, FileMode.Create))
                             {
                                 await image.CopyToAsync(stream);
                             }
 
-                            // Create StockImage record linked to this stock
+                            // Create and add StockImage record linked to the stock
                             var stockImage = new StockImage
                             {
                                 StockId = stock.StockId,
@@ -95,7 +104,7 @@ namespace EasyGames.Controllers
                             _context.StockImages.Add(stockImage);
                         }
                     }
-                    // Save all StockImage records to the database
+                    // Save all StockImage entities to database
                     await _context.SaveChangesAsync();
                 }
                 return RedirectToAction(nameof(Index));
@@ -104,13 +113,15 @@ namespace EasyGames.Controllers
             return View(stock);
         }
 
-        // GET: Stocks/Edit/5
+        // GET: Stocks/Edit/5 - Admins and Moderators can access Edit page
+        [Authorize(Roles = "Admin, Moderator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
+
             var stock = await _context.Stocks.FindAsync(id);
             if (stock == null)
             {
@@ -120,16 +131,17 @@ namespace EasyGames.Controllers
             return View(stock);
         }
 
-        // POST: Stocks/Edit/5
+        // POST: Stocks/Edit/5 - Admins and Moderators can edit stock including uploading new images
+        [Authorize(Roles = "Admin, Moderator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // Added ImageFiles parameter to accept uploaded images during edit
         public async Task<IActionResult> Edit(int id, [Bind("StockId,Name,Category,Price,Quantity,Description,CreatedDate")] Stock stock, List<IFormFile> ImageFiles)
         {
             if (id != stock.StockId)
             {
                 return NotFound();
             }
+
             if (ModelState.IsValid)
             {
                 try
@@ -137,7 +149,7 @@ namespace EasyGames.Controllers
                     _context.Update(stock);
                     await _context.SaveChangesAsync();
 
-                    // Handle new image uploads if any
+                    // Process image uploads if any
                     if (ImageFiles != null && ImageFiles.Count > 0)
                     {
                         foreach (var image in ImageFiles)
@@ -146,12 +158,10 @@ namespace EasyGames.Controllers
                             {
                                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
                                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", fileName);
-
                                 using (var stream = new FileStream(filePath, FileMode.Create))
                                 {
                                     await image.CopyToAsync(stream);
                                 }
-
                                 var stockImage = new StockImage
                                 {
                                     StockId = stock.StockId,
@@ -180,23 +190,27 @@ namespace EasyGames.Controllers
             return View(stock);
         }
 
-        // GET: Stocks/Delete/5
+        // GET: Stocks/Delete/5 - Only Admins can view Delete confirmation page
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
+
             var stock = await _context.Stocks
                 .FirstOrDefaultAsync(m => m.StockId == id);
             if (stock == null)
             {
                 return NotFound();
             }
+
             return View(stock);
         }
 
-        // POST: Stocks/Delete/5
+        // POST: Stocks/Delete/5 - Only Admins can delete a stock
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -210,6 +224,7 @@ namespace EasyGames.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Helper method to check if a stock item exists in database
         private bool StockExists(int id)
         {
             return _context.Stocks.Any(e => e.StockId == id);

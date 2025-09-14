@@ -1,5 +1,38 @@
-﻿@{
+﻿@using System.Linq
+@inject EasyGamesProject.Data.ApplicationDbContext _context
+
+@{
     ViewData["Title"] = "Home";
+
+    // Get user role if authenticated
+    string? userRole = null;
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        if (User.IsInRole("Admin"))
+        {
+            userRole = "Admin";
+        }
+        else if (User.IsInRole("Moderator"))
+        {
+            userRole = "Moderator";
+        }
+        else
+        {
+            userRole = "User";
+        }
+    }
+
+    // Get featured products for regular user: one per category, only if user is logged in and role is User (not Admin/Mod)
+    var featuredBooks = new List<EasyGamesProject.Models.Stock>();
+    var featuredGames = new List<EasyGamesProject.Models.Stock>();
+    var featuredToys = new List<EasyGamesProject.Models.Stock>();
+
+    if (userRole == "User")
+    {
+        featuredBooks = _context.Stocks.Where(s => s.Category == "Book").Take(1).ToList();
+        featuredGames = _context.Stocks.Where(s => s.Category == "Game").Take(1).ToList();
+        featuredToys = _context.Stocks.Where(s => s.Category == "Toy").Take(1).ToList();
+    }
 }
 
 <div class="container mt-4">
@@ -7,42 +40,73 @@
         <h1 class="display-4">Welcome to EasyGames</h1>
         <p class="lead">Your one-stop shop for Books, Games, and Toys!</p>
         <p>@ViewBag.DatabaseStatus</p>
-        <a class="btn btn-primary btn-lg m-2" asp-controller="Stocks" asp-action="Index">Browse Stock</a>
-        <a class="btn btn-secondary btn-lg m-2" asp-controller="Users" asp-action="Login">Login</a>
-        <a class="btn btn-success btn-lg m-2" asp-controller="Users" asp-action="Register">Register</a>
+
+        @if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            @* User not logged in: show Login/Register buttons *@
+            <a class="btn btn-secondary btn-lg m-2" asp-controller="Users" asp-action="Login">Login</a>
+            <a class="btn btn-success btn-lg m-2" asp-controller="Users" asp-action="Register">Register</a>
+        }
+        else if (userRole == "Admin" || userRole == "Moderator")
+        {
+            @* Admin or Moderator: show Dashboard link *@
+            <a class="btn btn-primary btn-lg m-2" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+        }
+        else if (userRole == "User")
+        {
+            @* Regular user: show Browse Stock button *@
+            <a class="btn btn-primary btn-lg m-2" asp-controller="Stocks" asp-action="Index">Browse Stock</a>
+        }
     </div>
 
-    <h3 class="mt-5 mb-4">Featured Products</h3>
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card mb-4 shadow-sm">
-                <img src="~/images/book-sample.jpg" class="card-img-top" alt="Book sample" />
-                <div class="card-body">
-                    <h5 class="card-title">Exciting Adventure Book</h5>
-                    <p class="card-text">$19.99</p>
-                    <a asp-controller="Stocks" asp-action="Details" asp-route-id="1" class="btn btn-primary">View Details</a>
+    @if (userRole == "User")
+    {
+        <h3 class="mt-5 mb-4">Featured Products</h3>
+        <div class="row">
+            @* Show one book if available *@
+            @foreach (var item in featuredBooks)
+            {
+                <div class="col-md-3">
+                    <div class="card mb-4 shadow-sm">
+                        <img src="~/images/book-sample.jpg" class="card-img-top" alt="Book sample" />
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text">@item.Price.ToString("C")</p>
+                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card mb-4 shadow-sm">
-                <img src="~/images/game-sample.jpg" class="card-img-top" alt="Game sample" />
-                <div class="card-body">
-                    <h5 class="card-title">Challenging Puzzle Game</h5>
-                    <p class="card-text">$29.99</p>
-                    <a asp-controller="Stocks" asp-action="Details" asp-route-id="2" class="btn btn-primary">View Details</a>
+            }
+
+            @* Show one game if available *@
+            @foreach (var item in featuredGames)
+            {
+                <div class="col-md-3">
+                    <div class="card mb-4 shadow-sm">
+                        <img src="~/images/game-sample.jpg" class="card-img-top" alt="Game sample" />
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text">@item.Price.ToString("C")</p>
+                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card mb-4 shadow-sm">
-                <img src="~/images/toy-sample.jpg" class="card-img-top" alt="Toy sample" />
-                <div class="card-body">
-                    <h5 class="card-title">Fun Children's Toy</h5>
-                    <p class="card-text">$14.99</p>
-                    <a asp-controller="Stocks" asp-action="Details" asp-route-id="3" class="btn btn-primary">View Details</a>
+            }
+
+            @* Show one toy if available *@
+            @foreach (var item in featuredToys)
+            {
+                <div class="col-md-3">
+                    <div class="card mb-4 shadow-sm">
+                        <img src="~/images/toy-sample.jpg" class="card-img-top" alt="Toy sample" />
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text">@item.Price.ToString("C")</p>
+                            <a asp-controller="Stocks" asp-action="Details" asp-route-id="@item.StockId" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
-    </div>
+    }
 </div>

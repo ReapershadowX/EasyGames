@@ -46,7 +46,7 @@
     </dl>
 </div>
 
-<!-- New section: display image thumbnails if any -->
+<!-- Display stock images if any -->
 @if (Model.Images != null && Model.Images.Any())
 {
     <h4>Images</h4>
@@ -63,8 +63,13 @@ else
 {
     <p><em>No images available for this stock item.</em></p>
 }
-
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.StockId">Edit</a> |
+    @* Show Edit link only to Admins and Moderators *@
+    @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Moderator")))
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.StockId">Edit</a>
+    
+        <text> | </text>
+    }
     <a asp-action="Index">Back to List</a>
 </div>
