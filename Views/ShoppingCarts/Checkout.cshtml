@@ -1,5 +1,42 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<EasyGamesProject.Models.ShoppingCart>
+
 @{
+    ViewData["Title"] = "Checkout";
+}
+
+<h2>Checkout</h2>
+
+@if (!Model.Any())
+{
+    <p>Your cart is empty.</p>
+    <a asp-action="ViewCart" class="btn btn-secondary">Back to Cart</a>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Stock?.Name</td>
+                    <td>@item.Stock?.Price.ToString("C")</td>
+                    <td>@item.Quantity</td>
+                    <td>@(item.Stock != null ? (item.Stock.Price * item.Quantity).ToString("C") : "")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h4>Total: @ViewBag.TotalPrice.ToString("C")</h4>
+    <form asp-action="ConfirmCheckout" method="post">
+        <button type="submit" class="btn btn-primary">Confirm Purchase</button>
+        <a asp-action="ViewCart" class="btn btn-secondary ml-2">Back to Cart</a>
+    </form>
 }

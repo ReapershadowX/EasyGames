@@ -3,7 +3,6 @@
     ViewData["Title"] = "Index";
 }
 <h1>Index</h1>
-
 @* Show "Create New" link only to authenticated Admin users *@
 @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
 {
@@ -11,7 +10,6 @@
         <a asp-action="Create">Create New</a>
     </p>
 }
-
 <table class="table">
     <thead>
         <tr>
@@ -35,29 +33,34 @@
                 <td>@Html.DisplayFor(modelItem => item.Description)</td>
                 <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
                 <td>
-                    @* Admins see Edit, Details, and Delete links *@
+                    @* Role-based links *@
                     @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                     {
                         <a asp-action="Edit" asp-route-id="@item.StockId">Edit</a>
-                
                         <text> | </text>
                         <a asp-action="Details" asp-route-id="@item.StockId">Details</a>
-
                         <text> | </text>
                         <a asp-action="Delete" asp-route-id="@item.StockId">Delete</a>
                     }
-                    @* Moderators see Edit and Details links *@
                     else if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Moderator"))
                     {
                         <a asp-action="Edit" asp-route-id="@item.StockId">Edit</a>
-                
                         <text> | </text>
                         <a asp-action="Details" asp-route-id="@item.StockId">Details</a>
                     }
-                    @* Other users and guests see Details only *@
                     else
                     {
                         <a asp-action="Details" asp-route-id="@item.StockId">Details</a>
+                    }
+
+                    @* Add to Cart form visible only to authenticated Users (not Admin/Moderator/Guest) *@
+                    @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("User"))
+                    {
+                        <form asp-controller="ShoppingCarts" asp-action="AddToCart" method="post" style="display:inline; margin-left:10px;">
+                            <input type="hidden" name="stockId" value="@item.StockId" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
+                        </form>
                     }
                 </td>
             </tr>

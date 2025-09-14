@@ -68,8 +68,19 @@ else
     @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Moderator")))
     {
         <a asp-action="Edit" asp-route-id="@Model?.StockId">Edit</a>
-    
         <text> | </text>
     }
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" style="margin-right:10px;">Back to List</a>
+
+    @* Add to Cart form visible only to authenticated Users in "User" role *@
+    @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("User"))
+    {
+        <form asp-controller="ShoppingCarts" asp-action="AddToCart" method="post" style="display:inline;">
+            <input type="hidden" name="stockId" value="@Model?.StockId" />
+            <input type="hidden" name="quantity" value="1" />
+            <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
+                Add to Cart
+            </button>
+        </form>
+    }
 </div>
