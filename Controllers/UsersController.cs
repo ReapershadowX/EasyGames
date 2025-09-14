@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization; // Added for Authorize attribute
+using Microsoft.AspNetCore.Authorization; // For Authorize attribute
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EasyGamesProject.Data;
@@ -20,13 +20,13 @@ namespace EasyGames.Controllers
         private readonly ApplicationDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
 
-        // Inject ApplicationDbContext via constructor for data access
+        // Inject database context via constructor
         public UsersController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Only Admins can access the users list
+        // Only Admins can see the users list
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
@@ -41,7 +41,9 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
+
             var user = await _context.Users.FirstOrDefaultAsync(m => m.UserId == id);
+
             if (user == null)
             {
                 return NotFound();
@@ -49,7 +51,7 @@ namespace EasyGames.Controllers
             return View(user);
         }
 
-        // Admin-only access for creating users
+        // Admin-only. Show create user form
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
@@ -57,6 +59,7 @@ namespace EasyGames.Controllers
             return View();
         }
 
+        // Admin-only. Create new user
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -73,7 +76,7 @@ namespace EasyGames.Controllers
             return View(user);
         }
 
-        // Admin & Moderator-only access for editing users
+        // Admin & Moderator can edit users
         [Authorize(Roles = "Admin, Moderator")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -81,15 +84,19 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
+
             var user = await _context.Users.FindAsync(id);
+
             if (user == null)
             {
                 return NotFound();
             }
+
             ViewBag.Roles = new List<string> { "User", "Admin", "Moderator" };
             return View(user);
         }
 
+        // Admin-only submit user edit
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -99,6 +106,7 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
+
             if (ModelState.IsValid)
             {
                 try
@@ -123,7 +131,7 @@ namespace EasyGames.Controllers
             return View(user);
         }
 
-        // Admin-only access for deleting users
+        // Admin-only user deletion page
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -131,14 +139,18 @@ namespace EasyGames.Controllers
             {
                 return NotFound();
             }
+
             var user = await _context.Users.FirstOrDefaultAsync(m => m.UserId == id);
+
             if (user == null)
             {
                 return NotFound();
             }
+
             return View(user);
         }
 
+        // Admin-only confirm user delete
         [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -153,7 +165,7 @@ namespace EasyGames.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Allow anonymous access for Login and Register actions
+        // Login page, accessible without authentication
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Login()
@@ -161,6 +173,7 @@ namespace EasyGames.Controllers
             return View();
         }
 
+        // Login form submit - validate and sign in user
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -168,29 +181,45 @@ namespace EasyGames.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
             if (user == null)
             {
                 ModelState.AddModelError("", "Invalid login attempt.");
                 return View(model);
             }
+
             var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, model.Password!);
             if (verificationResult == PasswordVerificationResult.Failed)
             {
                 ModelState.AddModelError("", "Invalid login attempt.");
                 return View(model);
             }
+
+            // Add UserId claim for identification in other parts of the app
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()), // Added claim for UserId
                 new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.Role, user.Role)
             };
+
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties { IsPersistent = true };
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
             return RedirectToAction("Index", "Home");
         }
 
+        // Log out action
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -199,6 +228,7 @@ namespace EasyGames.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // Registration page - accessible without authentication
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Register()
@@ -206,6 +236,7 @@ namespace EasyGames.Controllers
             return View();
         }
 
+        // Registration form submit - create new user
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -213,12 +244,14 @@ namespace EasyGames.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
             bool emailExists = _context.Users.Any(u => u.Email == model.Email);
             if (emailExists)
             {
                 ModelState.AddModelError("Email", "This email is already registered.");
                 return View(model);
             }
+
             var user = new User
             {
                 FirstName = model.FirstName!,
@@ -227,14 +260,16 @@ namespace EasyGames.Controllers
                 Role = "User", // default role
                 CreatedDate = DateTime.Now
             };
+
             user.Password = _passwordHasher.HashPassword(user, model.Password!);
             _context.Add(user);
             await _context.SaveChangesAsync();
+
             TempData["SuccessMessage"] = "Registration successful! You can now log in.";
             return RedirectToAction("Login");
         }
 
-        // Utility method to check if user exists
+        // Utility check if user exists by ID
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UserId == id);

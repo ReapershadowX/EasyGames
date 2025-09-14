@@ -1,0 +1,51 @@
+﻿@model IEnumerable<EasyGamesProject.Models.ShoppingCart>
+
+@{
+    ViewData["Title"] = "Your Shopping Cart";
+}
+
+<h2>Your Shopping Cart</h2>
+
+@if (!Model.Any())
+{
+    <p>Your cart is empty.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th></th> <!-- Remove button -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Stock?.Name</td>
+                    <td>@item.Stock?.Price.ToString("C")</td>
+                    <td>
+                        <form asp-action="UpdateQuantity" method="post" class="form-inline">
+                            <input type="hidden" name="cartId" value="@item.CartId" />
+                            <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.Stock?.Quantity" class="form-control form-control-sm" style="width: 70px;" />
+                            <button type="submit" class="btn btn-primary btn-sm ml-1">Update</button>
+                        </form>
+                    </td>
+                    <td>@(item.Stock != null ? (item.Stock.Price * item.Quantity).ToString("C") : "")</td>
+                    <td>
+                        <form asp-action="RemoveFromCart" method="post">
+                            <input type="hidden" name="cartId" value="@item.CartId" />
+                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h4>Total: @ViewBag.TotalPrice.ToString("C")</h4>
+    <a asp-action="Checkout" class="btn btn-success">Proceed to Checkout</a>
+}
