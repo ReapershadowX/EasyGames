@@ -1,16 +1,14 @@
 ﻿@model EasyGamesProject.Models.Stock
-
 @{
     ViewData["Title"] = "Edit";
 }
-
 <h1>Edit</h1>
-
 <h4>Stock</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <!-- Add enctype so the form can send files -->
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="StockId" />
             <div class="form-group">
@@ -38,17 +36,23 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+            <!-- Image file upload input, allows selecting multiple images -->
+            <div class="form-group">
+                <label for="ImageFiles" class="control-label">Upload New Images</label>
+                <input type="file" id="ImageFiles" name="ImageFiles" class="form-control" multiple accept="image/*" />
+                <!-- You can show image upload validation messages here if needed -->
+            </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
-
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

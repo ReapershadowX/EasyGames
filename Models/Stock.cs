@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using System.ComponentModel.DataAnnotations;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EasyGamesProject.Models
 {
@@ -28,5 +30,10 @@ namespace EasyGamesProject.Models
 
         // Record creation timestamp of the stock entry, defaulting to now
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        // For stock images
+        // Navigation property linking multiple images to this stock
+        public ICollection<StockImage>? Images { get; set; } = new List<StockImage>();
+
     }
 }

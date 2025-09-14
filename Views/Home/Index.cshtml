@@ -2,5 +2,47 @@
     ViewData["Title"] = "Home";
 }
 
-<h2>Welcome to EasyGames</h2>
-<p>@ViewBag.DatabaseStatus</p>
+<div class="container mt-4">
+    <div class="jumbotron text-center bg-light p-4 rounded">
+        <h1 class="display-4">Welcome to EasyGames</h1>
+        <p class="lead">Your one-stop shop for Books, Games, and Toys!</p>
+        <p>@ViewBag.DatabaseStatus</p>
+        <a class="btn btn-primary btn-lg m-2" asp-controller="Stocks" asp-action="Index">Browse Stock</a>
+        <a class="btn btn-secondary btn-lg m-2" asp-controller="Users" asp-action="Login">Login</a>
+        <a class="btn btn-success btn-lg m-2" asp-controller="Users" asp-action="Register">Register</a>
+    </div>
+
+    <h3 class="mt-5 mb-4">Featured Products</h3>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4 shadow-sm">
+                <img src="~/images/book-sample.jpg" class="card-img-top" alt="Book sample" />
+                <div class="card-body">
+                    <h5 class="card-title">Exciting Adventure Book</h5>
+                    <p class="card-text">$19.99</p>
+                    <a asp-controller="Stocks" asp-action="Details" asp-route-id="1" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4 shadow-sm">
+                <img src="~/images/game-sample.jpg" class="card-img-top" alt="Game sample" />
+                <div class="card-body">
+                    <h5 class="card-title">Challenging Puzzle Game</h5>
+                    <p class="card-text">$29.99</p>
+                    <a asp-controller="Stocks" asp-action="Details" asp-route-id="2" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4 shadow-sm">
+                <img src="~/images/toy-sample.jpg" class="card-img-top" alt="Toy sample" />
+                <div class="card-body">
+                    <h5 class="card-title">Fun Children's Toy</h5>
+                    <p class="card-text">$14.99</p>
+                    <a asp-controller="Stocks" asp-action="Details" asp-route-id="3" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

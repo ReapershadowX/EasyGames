@@ -1,16 +1,14 @@
 ﻿@model EasyGamesProject.Models.Stock
-
 @{
     ViewData["Title"] = "Create";
 }
-
 <h1>Create</h1>
-
 <h4>Stock</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <!-- Add enctype so the form can send files -->
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
@@ -22,7 +20,6 @@
                 <select asp-for="Category" class="form-control" asp-items="new SelectList(ViewBag.Categories)"></select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
-
             <div class="form-group">
                 <label asp-for="Price" class="control-label"></label>
                 <input asp-for="Price" class="form-control" />
@@ -38,18 +35,23 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-
+            <!-- Image file upload input, allows selecting multiple images -->
+            <div class="form-group">
+                <label for="ImageFiles" class="control-label">Upload Images</label>
+                <input type="file" id="ImageFiles" name="ImageFiles" class="form-control" multiple accept="image/*" />
+                <!-- You'll handle image upload messages either here or in the validation summary -->
+            </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
-
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
