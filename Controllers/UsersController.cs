@@ -20,7 +20,6 @@ namespace EasyGames.Controllers
         private readonly ApplicationDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
 
-        // Inject database context via constructor
         public UsersController(ApplicationDbContext context)
         {
             _context = context;
@@ -33,8 +32,8 @@ namespace EasyGames.Controllers
             return View(await _context.Users.ToListAsync());
         }
 
-        // Admin, Moderators & Users can see details
-        [Authorize(Roles = "Admin, Moderator,User")]
+        // Admin, Proprietor & Customers can see details
+        [Authorize(Roles = "Admin,Proprietor,Customer")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -55,7 +54,7 @@ namespace EasyGames.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            ViewBag.Roles = new List<string> { "User", "Admin", "Moderator" };
+            ViewBag.Roles = new List<string> { "Admin", "Proprietor", "Customer" };
             return View();
         }
 
@@ -68,16 +67,24 @@ namespace EasyGames.Controllers
             if (ModelState.IsValid)
             {
                 user.CreatedDate = DateTime.Now;
+                // Parse Role enum from string
+                if (!Enum.TryParse(user.Role.ToString(), out UserRole parsedRole))
+                {
+                    parsedRole = UserRole.Customer; // Default to Customer if invalid
+                }
+                user.Role = parsedRole;
+
                 user.Password = _passwordHasher.HashPassword(user, user.Password);
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.Roles = new List<string> { "Admin", "Proprietor", "Customer" };
             return View(user);
         }
 
-        // Admin & Moderator can edit users
-        [Authorize(Roles = "Admin, Moderator")]
+        // Admin & Proprietor can edit users
+        [Authorize(Roles = "Admin,Proprietor")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -86,13 +93,12 @@ namespace EasyGames.Controllers
             }
 
             var user = await _context.Users.FindAsync(id);
-
             if (user == null)
             {
                 return NotFound();
             }
 
-            ViewBag.Roles = new List<string> { "User", "Admin", "Moderator" };
+            ViewBag.Roles = new List<string> { "Admin", "Proprietor", "Customer" };
             return View(user);
         }
 
@@ -100,7 +106,7 @@ namespace EasyGames.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserId,FirstName,LastName,Email,Password,Role,CreatedDate")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("UserId,FirstName,LastName,Email,Password,Role,Tier,CreatedDate")] User user)
         {
             if (id != user.UserId)
             {
@@ -111,7 +117,30 @@ namespace EasyGames.Controllers
             {
                 try
                 {
-                    user.Password = _passwordHasher.HashPassword(user, user.Password);
+                    var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == user.UserId);
+                    if (existingUser == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (!Enum.TryParse(user.Role.ToString(), out UserRole parsedRole))
+                    {
+                        parsedRole = UserRole.Customer;
+                    }
+                    user.Role = parsedRole;
+
+                    // Prevent double hashing of password
+                    if (string.IsNullOrWhiteSpace(user.Password) || user.Password == existingUser.Password)
+                    {
+                        // Password not changed, keep existing hashed password
+                        user.Password = existingUser.Password;
+                    }
+                    else
+                    {
+                        // Password changed, hash new password input
+                        user.Password = _passwordHasher.HashPassword(user, user.Password);
+                    }
+
                     _context.Update(user);
                     await _context.SaveChangesAsync();
                 }
@@ -128,8 +157,10 @@ namespace EasyGames.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.Roles = new List<string> { "Admin", "Proprietor", "Customer" };
             return View(user);
         }
+
 
         // Admin-only user deletion page
         [Authorize(Roles = "Admin")]
@@ -201,7 +232,7 @@ namespace EasyGames.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()), // Added claim for UserId
                 new Claim(ClaimTypes.Name, user.FirstName),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Role, user.Role.ToString()) // Convert enum to string
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -257,7 +288,7 @@ namespace EasyGames.Controllers
                 FirstName = model.FirstName!,
                 LastName = model.LastName!,
                 Email = model.Email!,
-                Role = "User", // default role
+                Role = UserRole.Customer, // default role
                 CreatedDate = DateTime.Now
             };
 
