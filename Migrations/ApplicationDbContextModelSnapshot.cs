@@ -111,6 +111,18 @@ namespace EasyGames.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 9999,
+                            CreatedDate = new DateTime(2025, 10, 16, 19, 45, 58, 826, DateTimeKind.Local).AddTicks(5654),
+                            Email = "admin@email.com",
+                            FirstName = "Emergency",
+                            LastName = "Admin",
+                            Password = "AQAAAAIAAYagAAAAEKE363kE+0sL18ExxSoGvBUsBhD+jUaCp0eFWxCsDHe7jybsODoKSNM+LqgKf9AE3Q==",
+                            Role = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("StockImage", b =>

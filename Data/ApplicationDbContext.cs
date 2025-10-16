@@ -16,7 +16,7 @@ namespace EasyGamesProject.Data
         // DbSet for StockImages to represent stock item images
         public DbSet<StockImage> StockImages { get; set; }
 
-        // Configure entity relationships and behaviors using Fluent API
+  
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

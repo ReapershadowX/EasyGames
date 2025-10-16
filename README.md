@@ -2,7 +2,7 @@
 
 
 ## Credentials for existing Users
-Admin : test@email.com
+Admin : admin@email.com
 Password : password
 
 Moderator : mod@email.com
