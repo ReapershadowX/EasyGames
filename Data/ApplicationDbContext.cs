@@ -12,6 +12,8 @@ namespace EasyGamesProject.Data
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<Shop> Shops { get; set; }
+
 
         // DbSet for StockImages to represent stock item images
         public DbSet<StockImage> StockImages { get; set; }
