@@ -3,6 +3,22 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EasyGamesProject.Models
 {
+    public enum UserRole
+    {
+        Admin,
+        Proprietor,
+        Customer
+    }
+
+    public enum UserTier
+    {
+        None,
+        Bronze,
+        Silver,
+        Gold,
+        Platinum
+    }
+
     public class User
     {
         [Key]
@@ -23,7 +39,11 @@ namespace EasyGamesProject.Models
         [Required(ErrorMessage = "Password is required.")]
         public string Password { get; set; } = string.Empty;
 
-        public string Role { get; set; } = "User"; // Default role as User
+        [Required]
+        public UserRole Role { get; set; } = UserRole.Customer; // Default role to Customer
+
+        // Tier only applies to Customers, so it is nullable
+        public UserTier? Tier { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
     }
