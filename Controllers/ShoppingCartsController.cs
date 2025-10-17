@@ -199,7 +199,8 @@ namespace EasyGames.Controllers
                 .Include(c => c.Stock)
                 .ToListAsync();
 
-            ViewBag.TotalPrice = cartItems.Sum(i => i.Stock!.Price * i.Quantity);
+            ViewBag.TotalPrice = cartItems.Sum(i => i.Stock!.SellPrice * i.Quantity);
+
 
             return View(cartItems);
         }
@@ -262,7 +263,8 @@ namespace EasyGames.Controllers
                 .Include(c => c.Stock)
                 .ToListAsync();
 
-            ViewBag.TotalPrice = cartItems.Sum(i => i.Stock!.Price * i.Quantity);
+            ViewBag.TotalPrice = cartItems.Sum(i => i.Stock!.SellPrice * i.Quantity);
+
 
             return View(cartItems);
         }

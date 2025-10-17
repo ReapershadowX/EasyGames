@@ -3,6 +3,7 @@ using System;
 using EasyGamesProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EasyGames.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016163117_AddShopEntity")]
+    partial class AddShopEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -174,9 +177,9 @@ namespace EasyGames.Migrations
             modelBuilder.Entity("EasyGamesProject.Models.Shop", b =>
                 {
                     b.HasOne("EasyGamesProject.Models.User", "Proprietor")
-                        .WithMany("Shops")
+                        .WithMany()
                         .HasForeignKey("ProprietorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Proprietor");
@@ -215,11 +218,6 @@ namespace EasyGames.Migrations
             modelBuilder.Entity("EasyGamesProject.Models.Stock", b =>
                 {
                     b.Navigation("Images");
-                });
-
-            modelBuilder.Entity("EasyGamesProject.Models.User", b =>
-                {
-                    b.Navigation("Shops");
                 });
 #pragma warning restore 612, 618
         }

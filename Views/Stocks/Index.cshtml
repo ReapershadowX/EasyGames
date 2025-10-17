@@ -3,7 +3,6 @@
     ViewData["Title"] = "Index";
 }
 <h1>Index</h1>
-@* Show "Create New" link only to authenticated Admin users *@
 @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
 {
     <p>
@@ -15,7 +14,7 @@
         <tr>
             <th>@Html.DisplayNameFor(model => model.Name)</th>
             <th>@Html.DisplayNameFor(model => model.Category)</th>
-            <th>@Html.DisplayNameFor(model => model.Price)</th>
+            <th>@Html.DisplayNameFor(model => model.SellPrice)</th>
             <th>@Html.DisplayNameFor(model => model.Quantity)</th>
             <th>@Html.DisplayNameFor(model => model.Description)</th>
             <th>@Html.DisplayNameFor(model => model.CreatedDate)</th>
@@ -28,12 +27,11 @@
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Category)</td>
-                <td>@Html.DisplayFor(modelItem => item.Price)</td>
+                <td>@Html.DisplayFor(modelItem => item.SellPrice)</td>
                 <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
                 <td>@Html.DisplayFor(modelItem => item.Description)</td>
                 <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
                 <td>
-                    @* Role-based links *@
                     @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                     {
                         <a asp-action="Edit" asp-route-id="@item.StockId">Edit</a>
@@ -42,7 +40,7 @@
                         <text> | </text>
                         <a asp-action="Delete" asp-route-id="@item.StockId">Delete</a>
                     }
-                    else if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Moderator"))
+                    else if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Proprietor"))
                     {
                         <a asp-action="Edit" asp-route-id="@item.StockId">Edit</a>
                         <text> | </text>
@@ -53,8 +51,8 @@
                         <a asp-action="Details" asp-route-id="@item.StockId">Details</a>
                     }
 
-                    @* Add to Cart form visible only to authenticated Users (not Admin/Moderator/Guest) *@
-                    @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("User"))
+                    @* Add to Cart button only for Customers and Guests *@
+                    @if ((User?.Identity?.IsAuthenticated == true && User.IsInRole("Customer")) || !(User?.Identity?.IsAuthenticated == true))
                     {
                         <form asp-controller="ShoppingCarts" asp-action="AddToCart" method="post" style="display:inline; margin-left:10px;">
                             <input type="hidden" name="stockId" value="@item.StockId" />

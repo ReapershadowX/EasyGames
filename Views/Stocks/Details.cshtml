@@ -22,16 +22,31 @@
                 @Html.DisplayFor(model => model.Category)
             </dd>
             <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.Price)
+                @Html.DisplayNameFor(model => model.SellPrice) @* updated from Price *@
             </dt>
             <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Price)
+                @Html.DisplayFor(model => model.SellPrice)
             </dd>
+            @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Proprietor")))
+            {
+                <dt class="col-sm-3 fw-semibold">
+                    @Html.DisplayNameFor(model => model.BuyPrice) @* new field *@
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.BuyPrice)
+                </dd>
+            }
             <dt class="col-sm-3 fw-semibold">
                 @Html.DisplayNameFor(model => model.Quantity)
             </dt>
             <dd class="col-sm-9">
                 @Html.DisplayFor(model => model.Quantity)
+            </dd>
+            <dt class="col-sm-3 fw-semibold">
+                @Html.DisplayNameFor(model => model.Source) @* new field *@
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Source)
             </dd>
             <dt class="col-sm-3 fw-semibold">
                 @Html.DisplayNameFor(model => model.Description)
@@ -67,16 +82,16 @@
     }
 
     <div class="d-flex flex-wrap gap-3">
-        @* Show Edit link only to Admins and Moderators *@
-        @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Moderator")))
+        @* Show Edit link only to Admins and Proprietors *@
+        @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Proprietor")))
         {
             <a asp-action="Edit" asp-route-id="@Model?.StockId" class="btn btn-primary">Edit</a>
         }
 
         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 
-        @* Add to Cart form visible only to authenticated Users in "User" role *@
-        @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("User"))
+        @* Add to Cart form visible only to Customers and Guests *@
+        @if ((User?.Identity?.IsAuthenticated == true && User.IsInRole("Customer")) || !(User?.Identity?.IsAuthenticated == true))
         {
             <form asp-controller="ShoppingCarts" asp-action="AddToCart" method="post" class="d-inline">
                 <input type="hidden" name="stockId" value="@Model?.StockId" />

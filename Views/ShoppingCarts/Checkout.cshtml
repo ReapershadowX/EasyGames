@@ -27,9 +27,9 @@ else
             {
                 <tr>
                     <td>@item.Stock?.Name</td>
-                    <td>@item.Stock?.Price.ToString("C")</td>
+                    <td>@item.Stock?.SellPrice.ToString("C")</td>
                     <td>@item.Quantity</td>
-                    <td>@(item.Stock != null ? (item.Stock.Price * item.Quantity).ToString("C") : "")</td>
+                    <td>@(item.Stock != null ? (item.Stock.SellPrice * item.Quantity).ToString("C") : "")</td>
                 </tr>
             }
         </tbody>

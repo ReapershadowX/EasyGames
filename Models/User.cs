@@ -46,5 +46,9 @@ namespace EasyGamesProject.Models
         public UserTier? Tier { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        // NAVIGATION PROPERTY: Links User to Shops they own (Proprietor)
+        public ICollection<Shop> Shops { get; set; } = new List<Shop>();
+
     }
 }

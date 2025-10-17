@@ -27,7 +27,7 @@ else
             {
                 <tr>
                     <td>@item.Stock?.Name</td>
-                    <td>@item.Stock?.Price.ToString("C")</td>
+                    <td>@item.Stock?.SellPrice.ToString("C")</td>
                     <td>
                         <form asp-action="UpdateQuantity" method="post" class="form-inline">
                             <input type="hidden" name="cartId" value="@item.CartId" />
@@ -35,7 +35,7 @@ else
                             <button type="submit" class="btn btn-primary btn-sm ml-1">Update</button>
                         </form>
                     </td>
-                    <td>@(item.Stock != null ? (item.Stock.Price * item.Quantity).ToString("C") : "")</td>
+                    <td>@(item.Stock != null ? (item.Stock.SellPrice * item.Quantity).ToString("C") : "")</td>
                     <td>
                         <form asp-action="RemoveFromCart" method="post">
                             <input type="hidden" name="cartId" value="@item.CartId" />

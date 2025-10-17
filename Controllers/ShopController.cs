@@ -1,57 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using EasyGamesProject.Data;
+using EasyGamesProject.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using EasyGamesProject.Data;
-using EasyGamesProject.Models;
 
 namespace EasyGames.Controllers
 {
-    public class ShopsController : Controller
+    [Authorize(Roles = "Admin")]
+    public class ShopController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public ShopsController(ApplicationDbContext context)
+        public ShopController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Shops
+        // GET: Shop
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Shops.ToListAsync());
+            var shops = _context.Shops.Include(s => s.Proprietor);
+            return View(await shops.ToListAsync());
         }
 
-        // GET: Shops/Details/5
+        // GET: Shop/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var shop = await _context.Shops
-                .FirstOrDefaultAsync(m => m.ShopId == id);
-            if (shop == null)
-            {
-                return NotFound();
-            }
+            var shop = await _context.Shops.Include(s => s.Proprietor).FirstOrDefaultAsync(m => m.ShopId == id);
+            if (shop == null) return NotFound();
 
             return View(shop);
         }
 
-        // GET: Shops/Create
+        // GET: Shop/Create
         public IActionResult Create()
         {
+            ViewData["ProprietorId"] = new SelectList(_context.Users.Where(u => u.Role == UserRole.Proprietor), "UserId", "Email");
             return View();
         }
 
-        // POST: Shops/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Shop/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ShopId,Name,Location,ProprietorId")] Shop shop)
@@ -62,36 +53,28 @@ namespace EasyGames.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ProprietorId"] = new SelectList(_context.Users.Where(u => u.Role == UserRole.Proprietor), "UserId", "Email", shop.ProprietorId);
             return View(shop);
         }
 
-        // GET: Shops/Edit/5
+        // GET: Shop/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var shop = await _context.Shops.FindAsync(id);
-            if (shop == null)
-            {
-                return NotFound();
-            }
+            if (shop == null) return NotFound();
+
+            ViewData["ProprietorId"] = new SelectList(_context.Users.Where(u => u.Role == UserRole.Proprietor), "UserId", "Email", shop.ProprietorId);
             return View(shop);
         }
 
-        // POST: Shops/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Shop/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ShopId,Name,Location,ProprietorId")] Shop shop)
         {
-            if (id != shop.ShopId)
-            {
-                return NotFound();
-            }
+            if (id != shop.ShopId) return NotFound();
 
             if (ModelState.IsValid)
             {
@@ -102,39 +85,27 @@ namespace EasyGames.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ShopExists(shop.ShopId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!_context.Shops.Any(e => e.ShopId == shop.ShopId)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ProprietorId"] = new SelectList(_context.Users.Where(u => u.Role == UserRole.Proprietor), "UserId", "Email", shop.ProprietorId);
             return View(shop);
         }
 
-        // GET: Shops/Delete/5
+        // GET: Shop/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var shop = await _context.Shops
-                .FirstOrDefaultAsync(m => m.ShopId == id);
-            if (shop == null)
-            {
-                return NotFound();
-            }
+            var shop = await _context.Shops.Include(s => s.Proprietor).FirstOrDefaultAsync(m => m.ShopId == id);
+            if (shop == null) return NotFound();
 
             return View(shop);
         }
 
-        // POST: Shops/Delete/5
+        // POST: Shop/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -143,9 +114,8 @@ namespace EasyGames.Controllers
             if (shop != null)
             {
                 _context.Shops.Remove(shop);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

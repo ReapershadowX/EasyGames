@@ -19,7 +19,7 @@
                 @Html.DisplayNameFor(model => model.Location)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ProprietorId)
+                @Html.DisplayNameFor(model => model.Proprietor)
             </th>
             <th></th>
         </tr>
@@ -34,7 +34,7 @@
                 @Html.DisplayFor(modelItem => item.Location)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ProprietorId)
+                @Html.DisplayFor(modelItem => item.Proprietor.Email)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.ShopId">Edit</a> |

@@ -1,39 +1,56 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace EasyGamesProject.Models
 {
-    public class Stock
+    public class Stock : IValidatableObject
     {
         [Key]
         public int StockId { get; set; }
 
         [Required(ErrorMessage = "Name is required.")]
         [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
-        public string Name { get; set; } = string.Empty; // Initialized to satisfy non-nullable constraint
+        public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Category is required.")]
-        public string Category { get; set; } = string.Empty; // Initialized to satisfy non-nullable constraint; e.g., Books, Games, Toys
+        public string Category { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Price is required.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
-        public decimal Price { get; set; }
+        public decimal SellPrice { get; set; } // renamed from Price for clarity
+
+        [Required(ErrorMessage = "Buy price is required.")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Buy price must be greater than 0")]
+        public decimal BuyPrice { get; set; } // new field
 
         [Required(ErrorMessage = "Quantity is required.")]
         [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]
         public int Quantity { get; set; }
 
-        // Description is optional and initialized to empty string to support non-nullability
+        public string Source { get; set; } = string.Empty; // new field to track origin
+
         public string Description { get; set; } = string.Empty;
 
-        // Record creation timestamp of the stock entry, defaulting to now
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-        // For stock images
-        // Navigation property linking multiple images to this stock
         public ICollection<StockImage>? Images { get; set; } = new List<StockImage>();
 
+        // Computed property for profit margin percentage
+        public decimal ProfitMargin
+        {
+            get => SellPrice != 0 ? (SellPrice - BuyPrice) / SellPrice * 100 : 0;
+        }
+
+        // Custom validation logic
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (BuyPrice > SellPrice)
+            {
+                yield return new ValidationResult(
+                    "Buy price cannot be greater than Sell price.",
+                    new[] { nameof(BuyPrice), nameof(SellPrice) });
+            }
+        }
     }
 }
