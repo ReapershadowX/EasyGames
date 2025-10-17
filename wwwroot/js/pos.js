@@ -1,5 +1,7 @@
 ﻿// wwwroot/js/pos.js
 
+// Created with the Help of AI Language Model (ChatGPT)
+
 $(function () {
     // Cart array to hold line items
     let cart = [];

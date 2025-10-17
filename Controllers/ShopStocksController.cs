@@ -1,11 +1,10 @@
-﻿using EasyGamesProject.Data;
+﻿// Created with the help of ChatGPT
+
+using EasyGamesProject.Data;
 using EasyGamesProject.Models;
-using EasyGamesProject.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EasyGames.Controllers
 {

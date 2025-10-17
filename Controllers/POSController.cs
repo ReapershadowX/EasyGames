@@ -1,4 +1,7 @@
 ﻿// Controllers/POSController.cs
+
+// Created with the help of ChatGPT
+
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
 using EasyGamesProject.ViewModels;
@@ -6,11 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Text.Json;
-using System.Collections.Generic;
 
 namespace EasyGamesProject.Controllers
 {

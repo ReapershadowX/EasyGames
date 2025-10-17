@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization; // For Authorize attribute
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿// Created with the help of ChatGPT
+
 using EasyGamesProject.Data;
 using EasyGamesProject.Models;
 using EasyGamesProject.ViewModels; // For RegisterViewModel and LoginViewModel
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization; // For Authorize attribute
 using Microsoft.AspNetCore.Identity; // For PasswordHasher
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace EasyGames.Controllers
 {
