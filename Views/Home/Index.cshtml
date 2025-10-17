@@ -43,11 +43,6 @@
             <a class="btn btn-secondary btn-lg m-2" asp-controller="Users" asp-action="Login">Login</a>
             <a class="btn btn-success btn-lg m-2" asp-controller="Users" asp-action="Register">Register</a>
         }
-        else if (userRole == "Admin" || userRole == "Moderator")
-        {
-            @* Admin or Moderator: show Dashboard link *@
-            <a class="btn btn-primary btn-lg m-2" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-        }
         else if (userRole == "User")
         {
             @* Regular user: show Browse Stock button *@
