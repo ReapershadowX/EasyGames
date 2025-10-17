@@ -1,0 +1,111 @@
+﻿@model EasyGamesProject.ViewModels.POSViewModel
+
+@{
+    Layout = "~/Views/Shared/_POSLayout.cshtml";
+    ViewData["Title"] = "POS Terminal";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["LowStockWarning"] != null)
+{
+    <div class="alert alert-warning">@TempData["LowStockWarning"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<h2>POS – @ViewBag.ShopName</h2>
+
+<form asp-action="CompleteSale" asp-route-shopId="@(ViewBag.ShopId)" method="post" id="posForm">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="CustomerPhone"></label>
+            <div class="input-group">
+                <input asp-for="CustomerPhone" class="form-control" placeholder="Phone…" />
+                <button type="button" id="lookupBtn" class="btn btn-secondary">Lookup</button>
+            </div>
+            <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label>Customer Name</label>
+            <input asp-for="CustomerName" class="form-control" readonly />
+        </div>
+        <div class="col-md-4">
+            <label>Tier Discount (%)</label>
+            <input asp-for="TierDiscount" class="form-control" readonly />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SelectedStockId"></label>
+            <select asp-for="SelectedStockId" asp-items="Model.AvailableStock" class="form-control">
+                <option value="">-- Select Item --</option>
+            </select>
+            <span asp-validation-for="SelectedStockId" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Quantity"></label>
+            <input asp-for="Quantity" class="form-control" />
+            <span asp-validation-for="Quantity" class="text-danger"></span>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="button" id="addBtn" class="btn btn-primary w-100">Add to Cart</button>
+        </div>
+    </div>
+
+    <h4>Cart</h4>
+    <table class="table table-bordered" id="cartTable">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Unit Price</th>
+                <th class="text-end">Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.CartItems)
+            {
+                <tr data-stock-id="@item.StockId">
+                    <td>@item.ItemName</td>
+                    <td class="text-center">@item.Quantity</td>
+                    <td class="text-end">@item.UnitPrice.ToString("F2")</td>
+                    <td class="text-end">@item.Subtotal.ToString("F2")</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger remove-item">×</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-end">Total Before Discount</th>
+                <th class="text-end" id="totalBefore">@Model.CartItems.Sum(i => i.Subtotal).ToString("F2")</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th colspan="3" class="text-end">Discount</th>
+                <th class="text-end" id="totalDiscount">@((Model.CartItems.Sum(i => i.Subtotal) * Model.TierDiscount / 100).ToString("F2"))</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th colspan="3" class="text-end">Grand Total</th>
+                <th class="text-end" id="grandTotal">@((Model.CartItems.Sum(i => i.Subtotal) * (1 - Model.TierDiscount / 100)).ToString("F2"))</th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <input type="hidden" id="CartJson" name="CartJson" />
+    <button type="submit" class="btn btn-success">Complete Sale</button>
+</form>
+
+@section Scripts {
+    <script src="~/js/pos.js"></script>
+}

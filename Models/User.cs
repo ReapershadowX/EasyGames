@@ -39,16 +39,19 @@ namespace EasyGamesProject.Models
         [Required(ErrorMessage = "Password is required.")]
         public string Password { get; set; } = string.Empty;
 
-        [Required]
-        public UserRole Role { get; set; } = UserRole.Customer; // Default role to Customer
+        [Phone]
+        [StringLength(15)]
+        public string? PhoneNumber { get; set; }
 
-        // Tier only applies to Customers, so it is nullable
+        [Required]
+        public UserRole Role { get; set; } = UserRole.Customer;
+
+        // Tier only applies to Customers
         public UserTier? Tier { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-        // NAVIGATION PROPERTY: Links User to Shops they own (Proprietor)
+        // Proprietor navigation
         public ICollection<Shop> Shops { get; set; } = new List<Shop>();
-
     }
 }

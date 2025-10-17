@@ -1,0 +1,20 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Select Shop";
+    var shops = ViewBag.Shops as List<EasyGamesProject.Models.Shop> ?? new List<EasyGamesProject.Models.Shop>();
+}
+
+<h2>Select Shop</h2>
+<form asp-action="Index" method="get" class="mt-4">
+    <div class="mb-3">
+        <label for="shopId" class="form-label">Choose a Shop</label>
+        <select id="shopId" name="shopId" class="form-select" required>
+            <option value="">-- Choose --</option>
+            @foreach (var s in shops)
+            {
+                <option value="@s.ShopId">@s.Name</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Go to POS</button>
+</form>

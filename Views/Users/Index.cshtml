@@ -15,9 +15,10 @@
                 <th>@Html.DisplayNameFor(model => model.FirstName)</th>
                 <th>@Html.DisplayNameFor(model => model.LastName)</th>
                 <th>@Html.DisplayNameFor(model => model.Email)</th>
+                <th>@Html.DisplayNameFor(model => model.PhoneNumber)</th>
                 <th>@Html.DisplayNameFor(model => model.Password)</th>
                 <th>@Html.DisplayNameFor(model => model.Role)</th>
-                <th>@Html.DisplayNameFor(model => model.Tier)</th> <!-- Tier column -->
+                <th>@Html.DisplayNameFor(model => model.Tier)</th>
                 <th>@Html.DisplayNameFor(model => model.CreatedDate)</th>
                 <th>Actions</th>
             </tr>
@@ -29,9 +30,10 @@
                     <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
                     <td>@Html.DisplayFor(modelItem => item.LastName)</td>
                     <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                    <td>@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
                     <td>@Html.DisplayFor(modelItem => item.Password)</td>
                     <td>@Html.DisplayFor(modelItem => item.Role)</td>
-                    <td>@(item.Tier.HasValue? item.Tier.Value.ToString() : "")</td> <!-- Tier display -->
+                    <td>@(item.Tier.HasValue? item.Tier.Value.ToString() : "")</td>
                     <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@item.UserId" class="btn btn-sm btn-outline-primary me-1">Edit</a>

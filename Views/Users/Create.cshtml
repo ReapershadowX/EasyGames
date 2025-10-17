@@ -2,15 +2,11 @@
 @{
     ViewData["Title"] = "Create User";
 }
-@* Wrapper div to center vertically and horizontally using flex from CSS class *@
 <div class="form-center-wrapper">
     <h1 class="mb-4">Create User</h1>
-    @* Bootstrap row with full width and centered content *@
     <div class="row w-100 justify-content-center">
-        @* Constrain form width to col-md-4 as before *@
         <div class="col-md-4">
             <form asp-action="Create" novalidate>
-                @* Validation summary styled with alert-danger for visibility *@
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                 <div class="mb-3">
@@ -43,7 +39,12 @@
                     <span asp-validation-for="Role" class="text-danger"></span>
                 </div>
 
-                @* Buttons side by side with margin and spacing *@
+                <div class="mb-3">
+                    <label asp-for="PhoneNumber" class="form-label"></label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
                 <div class="mb-3 d-flex justify-content-between">
                     <input type="submit" value="Create" class="btn btn-primary" />
                     <a asp-action="Index" class="btn btn-secondary">Back to List</a>

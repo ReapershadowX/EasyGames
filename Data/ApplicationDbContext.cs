@@ -45,5 +45,6 @@ namespace EasyGamesProject.Data
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete from User to Shops
         }
         public DbSet<EasyGamesProject.Models.ShopStock> ShopStock { get; set; } = default!;
+        public DbSet<Sale> Sales { get; set; }
     }
 }

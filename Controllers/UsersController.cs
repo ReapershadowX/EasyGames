@@ -62,7 +62,7 @@ namespace EasyGames.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Password,Role")] User user)
+        public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Password,Role,PhoneNumber,Tier")] User user)
         {
             if (ModelState.IsValid)
             {
@@ -106,12 +106,15 @@ namespace EasyGames.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserId,FirstName,LastName,Email,Password,Role,Tier,CreatedDate")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("UserId,FirstName,LastName,Email,Password,Role,Tier,PhoneNumber,CreatedDate")] User user)
         {
             if (id != user.UserId)
             {
                 return NotFound();
             }
+
+            // Allow edit without requiring password
+            ModelState.Remove(nameof(user.Password));
 
             if (ModelState.IsValid)
             {
@@ -160,7 +163,6 @@ namespace EasyGames.Controllers
             ViewBag.Roles = new List<string> { "Admin", "Proprietor", "Customer" };
             return View(user);
         }
-
 
         // Admin-only user deletion page
         [Authorize(Roles = "Admin")]
