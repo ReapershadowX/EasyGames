@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace EasyGamesProject.Controllers
 {
@@ -37,19 +38,12 @@ namespace EasyGamesProject.Controllers
         public async Task<IActionResult> Index(int? shopId)
         {
             if (shopId == null)
-            {
-                // Redirect to the shop selection page
                 return RedirectToAction(nameof(SelectShop));
-            }
 
-            // Load shop and verify it exists
             var shop = await _context.Shops.FindAsync(shopId);
             if (shop == null)
-            {
                 return NotFound();
-            }
 
-            // Create POS view model with available shop stock
             var model = new POSViewModel
             {
                 AvailableStock = await _context.ShopStock
@@ -72,9 +66,8 @@ namespace EasyGamesProject.Controllers
         // GET: POS/SelectShop
         public async Task<IActionResult> SelectShop()
         {
-            var shops = await _context.Shops.ToListAsync();
-            ViewBag.Shops = shops;
-            return View(); // Views/POS/SelectShop.cshtml using default _Layout
+            ViewBag.Shops = await _context.Shops.ToListAsync();
+            return View();
         }
 
         // POST: POS/LookupCustomer
@@ -108,16 +101,14 @@ namespace EasyGamesProject.Controllers
                 .FirstOrDefaultAsync(ss => ss.ShopId == shopId && ss.StockId == stockId);
 
             if (shopStock == null)
-            {
                 return Json(new { success = false, message = "Item not found in shop inventory" });
-            }
 
             var subtotal = shopStock.SellPrice * quantity;
 
             return Json(new
             {
-                success   = true,
-                itemName  = shopStock.Stock.Name,
+                success = true,
+                itemName = shopStock.Stock.Name,
                 quantity,
                 unitPrice = shopStock.SellPrice,
                 subtotal
@@ -129,12 +120,11 @@ namespace EasyGamesProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CompleteSale(POSViewModel model, int shopId)
         {
-            // Deserialize cart from JSON
-            model.CartItems = JsonSerializer
+            var postedItems = JsonSerializer
                 .Deserialize<List<POSCartItem>>(model.CartJson ?? "[]")
                 ?? new List<POSCartItem>();
 
-            if (!model.CartItems.Any())
+            if (!postedItems.Any())
             {
                 TempData["ErrorMessage"] = "Cart is empty";
                 return RedirectToAction(nameof(Index), new { shopId });
@@ -151,7 +141,7 @@ namespace EasyGamesProject.Controllers
                     customerId = customer?.UserId;
                 }
 
-                foreach (var item in model.CartItems)
+                foreach (var item in postedItems)
                 {
                     var shopStock = await _context.ShopStock
                         .Include(ss => ss.Stock)
@@ -163,28 +153,25 @@ namespace EasyGamesProject.Controllers
                         continue;
                     }
 
-                    // Decrement stock and mark modified
                     shopStock.Quantity -= item.Quantity;
                     _context.Entry(shopStock).State = EntityState.Modified;
 
-                    // Calculate pricing and discount
                     var unitPrice = shopStock.SellPrice;
                     var discountAmount = (unitPrice * item.Quantity) * (model.TierDiscount / 100);
                     var totalPrice = (unitPrice * item.Quantity) - discountAmount;
 
-                    // Record sale
                     var sale = new Sale
                     {
-                        ShopId         = shopId,
-                        UserId         = customerId,
-                        CustomerPhone  = model.CustomerPhone,
-                        StockId        = item.StockId,
-                        Quantity       = item.Quantity,
-                        UnitPrice      = unitPrice,
+                        ShopId = shopId,
+                        UserId = customerId,
+                        CustomerPhone = model.CustomerPhone,
+                        StockId = item.StockId,
+                        Quantity = item.Quantity,
+                        UnitPrice = unitPrice,
                         DiscountAmount = discountAmount,
-                        TotalPrice     = totalPrice,
-                        SaleDate       = DateTime.Now,
-                        SaleType       = "POS"
+                        TotalPrice = totalPrice,
+                        SaleDate = DateTime.Now,
+                        SaleType = "POS"
                     };
                     _context.Sales.Add(sale);
                 }
@@ -206,19 +193,20 @@ namespace EasyGamesProject.Controllers
         // GET: POS/SalesHistory
         public async Task<IActionResult> SalesHistory(int shopId, DateTime? fromDate, DateTime? toDate)
         {
-            var query = _context.Sales
+            IQueryable<Sale> query = _context.Sales
                 .Where(s => s.ShopId == shopId)
                 .Include(s => s.Stock)
-                .Include(s => s.User)
-                .OrderByDescending(s => s.SaleDate);
+                .Include(s => s.User);
 
             if (fromDate.HasValue)
-                query = (IOrderedQueryable<Sale>)query.Where(s => s.SaleDate >= fromDate.Value);
+                query = query.Where(s => s.SaleDate >= fromDate.Value);
 
             if (toDate.HasValue)
-                query = (IOrderedQueryable<Sale>)query.Where(s => s.SaleDate <= toDate.Value);
+                query = query.Where(s => s.SaleDate <= toDate.Value);
 
-            var sales = await query.ToListAsync();
+            var sales = await query
+                .OrderByDescending(s => s.SaleDate)
+                .ToListAsync();
 
             ViewBag.ShopId = shopId;
             ViewBag.FromDate = fromDate;
