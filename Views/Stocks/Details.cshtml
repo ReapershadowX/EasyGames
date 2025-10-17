@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Stock Details";
 }
+
 <div class="form-center-wrapper" style="max-width: 800px; width: 100%;">
     <h1 class="mb-4">Stock Details</h1>
 
@@ -9,61 +10,36 @@
         <h4>Stock</h4>
         <hr />
         <dl class="row">
-            <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.Name)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Name)
-            </dd>
-            <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.Category)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Category)
-            </dd>
-            <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.SellPrice) @* updated from Price *@
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.SellPrice)
-            </dd>
+            <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.Name)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+
+            <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.Category)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Category)</dd>
+
+            <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.SellPrice)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.SellPrice)</dd>
+
             @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Proprietor")))
             {
-                <dt class="col-sm-3 fw-semibold">
-                    @Html.DisplayNameFor(model => model.BuyPrice) @* new field *@
-                </dt>
-                <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.BuyPrice)
-                </dd>
+                <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.BuyPrice)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.BuyPrice)</dd>
             }
-            <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.Quantity)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Quantity)
-            </dd>
-            <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.Source) @* new field *@
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Source)
-            </dd>
-            <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.Description)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Description)
-            </dd>
-            <dt class="col-sm-3 fw-semibold">
-                @Html.DisplayNameFor(model => model.CreatedDate)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.CreatedDate)
-            </dd>
+
+            <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.Quantity)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Quantity)</dd>
+
+            <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.Source)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Source)</dd>
+
+            <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.Description)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Description)</dd>
+
+            <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.CreatedDate)</dd>
         </dl>
     </div>
 
-    @* Display stock images *@
+    @* Display Images if any *@
     @if (Model.Images != null && Model.Images.Any())
     {
         <h4>Images</h4>
@@ -82,19 +58,16 @@
     }
 
     <div class="d-flex flex-wrap gap-3">
-        @* Show Edit link only to Admins and Proprietors *@
         @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Proprietor")))
         {
-            <a asp-action="Edit" asp-route-id="@Model?.StockId" class="btn btn-primary">Edit</a>
+            <a asp-action="Edit" asp-route-id="@Model.StockId" class="btn btn-primary">Edit</a>
         }
-
         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 
-        @* Add to Cart form visible only to Customers and Guests *@
         @if ((User?.Identity?.IsAuthenticated == true && User.IsInRole("Customer")) || !(User?.Identity?.IsAuthenticated == true))
         {
             <form asp-controller="ShoppingCarts" asp-action="AddToCart" method="post" class="d-inline">
-                <input type="hidden" name="stockId" value="@Model?.StockId" />
+                <input type="hidden" name="stockId" value="@Model.StockId" />
                 <input type="hidden" name="quantity" value="1" />
                 <button type="submit" class="btn btn-success">Add to Cart</button>
             </form>

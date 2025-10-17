@@ -44,5 +44,6 @@ namespace EasyGamesProject.Data
                 .HasForeignKey(s => s.ProprietorId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete from User to Shops
         }
+        public DbSet<EasyGamesProject.Models.ShopStock> ShopStock { get; set; } = default!;
     }
 }

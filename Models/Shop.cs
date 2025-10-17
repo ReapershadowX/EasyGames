@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EasyGamesProject.Models
@@ -20,6 +21,9 @@ namespace EasyGamesProject.Models
         public int ProprietorId { get; set; }  // Foreign key
 
         [ForeignKey("ProprietorId")]
-        public User? Proprietor { get; set; } 
+        public User? Proprietor { get; set; }
+
+        // Navigation property to shop inventory records
+        public ICollection<ShopStock>? ShopStocks { get; set; }
     }
 }

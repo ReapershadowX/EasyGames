@@ -3,6 +3,7 @@ using System;
 using EasyGamesProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EasyGames.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251017042629_AddShopStock")]
+    partial class AddShopStock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -41,40 +44,6 @@ namespace EasyGames.Migrations
                     b.HasIndex("ProprietorId");
 
                     b.ToTable("Shops");
-                });
-
-            modelBuilder.Entity("EasyGamesProject.Models.ShopStock", b =>
-                {
-                    b.Property<int>("ShopStockId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("BuyPrice")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("SellPrice")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ShopId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("StockId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ShopStockId");
-
-                    b.HasIndex("ShopId");
-
-                    b.HasIndex("StockId");
-
-                    b.ToTable("ShopStock");
                 });
 
             modelBuilder.Entity("EasyGamesProject.Models.ShoppingCart", b =>
@@ -216,25 +185,6 @@ namespace EasyGames.Migrations
                     b.Navigation("Proprietor");
                 });
 
-            modelBuilder.Entity("EasyGamesProject.Models.ShopStock", b =>
-                {
-                    b.HasOne("EasyGamesProject.Models.Shop", "Shop")
-                        .WithMany("ShopStocks")
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EasyGamesProject.Models.Stock", "Stock")
-                        .WithMany("ShopStocks")
-                        .HasForeignKey("StockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Shop");
-
-                    b.Navigation("Stock");
-                });
-
             modelBuilder.Entity("EasyGamesProject.Models.ShoppingCart", b =>
                 {
                     b.HasOne("EasyGamesProject.Models.Stock", "Stock")
@@ -265,16 +215,9 @@ namespace EasyGames.Migrations
                     b.Navigation("Stock");
                 });
 
-            modelBuilder.Entity("EasyGamesProject.Models.Shop", b =>
-                {
-                    b.Navigation("ShopStocks");
-                });
-
             modelBuilder.Entity("EasyGamesProject.Models.Stock", b =>
                 {
                     b.Navigation("Images");
-
-                    b.Navigation("ShopStocks");
                 });
 
             modelBuilder.Entity("EasyGamesProject.Models.User", b =>

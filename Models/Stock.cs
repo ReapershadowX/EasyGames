@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EasyGamesProject.Models
 {
@@ -26,7 +27,7 @@ namespace EasyGamesProject.Models
 
         [Required(ErrorMessage = "Quantity is required.")]
         [Range(0, int.MaxValue, ErrorMessage = "Quantity cannot be negative")]
-        public int Quantity { get; set; }
+        public int Quantity { get; set; }  // Owner's available stock quantity
 
         public string Source { get; set; } = string.Empty; // new field to track origin
 
@@ -36,11 +37,18 @@ namespace EasyGamesProject.Models
 
         public ICollection<StockImage>? Images { get; set; } = new List<StockImage>();
 
+        // Navigation property to relate to shop stocks
+        public ICollection<ShopStock>? ShopStocks { get; set; }
+
         // Computed property for profit margin percentage
         public decimal ProfitMargin
         {
             get => SellPrice != 0 ? (SellPrice - BuyPrice) / SellPrice * 100 : 0;
         }
+
+        // Computed available quantity not yet assigned to shops
+        [NotMapped]
+        public int AvailableQuantity => Quantity - (ShopStocks?.Sum(ss => ss.Quantity) ?? 0);
 
         // Custom validation logic
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

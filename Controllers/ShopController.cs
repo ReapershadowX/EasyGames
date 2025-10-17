@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EasyGames.Controllers
 {
@@ -20,6 +22,7 @@ namespace EasyGames.Controllers
         // GET: Shop
         public async Task<IActionResult> Index()
         {
+            // Eager load Proprietor navigation
             var shops = _context.Shops.Include(s => s.Proprietor);
             return View(await shops.ToListAsync());
         }
@@ -38,6 +41,7 @@ namespace EasyGames.Controllers
         // GET: Shop/Create
         public IActionResult Create()
         {
+            // Populate proprietors dropdown filtered by role for usability
             ViewData["ProprietorId"] = new SelectList(_context.Users.Where(u => u.Role == UserRole.Proprietor), "UserId", "Email");
             return View();
         }
