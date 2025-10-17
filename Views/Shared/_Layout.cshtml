@@ -4,102 +4,132 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EasyGames</title>
-    <script type="importmap"></script>
-
-    @* Existing Bootstrap CSS included for layout and styling *@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    @* Include base styles (typography, colors, resets) *@
     <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
-
-    @* Include layout-specific styles (navbar, containers, grids) *@
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
-
-    @* Include component styles (cards, buttons, forms, alerts) *@
     <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
-
-    @* Include page-specific styles for Home, Stocks, etc. *@
     <link rel="stylesheet" href="~/css/pages.css" asp-append-version="true" />
-
-    @* Include theme styles such as dark mode (optional) *@
     <link rel="stylesheet" href="~/css/themes.css" asp-append-version="true" />
-
-    @* Existing custom stylesheet if still needed, keep or remove based on overlap *@
     <link rel="stylesheet" href="~/EasyGames.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-
-                @* Brand logo linking to Home page *@
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">EasyGames</a>
-
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">EasyGames</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between" id="navbarSupportedContent">
-
-                    @* Primary navigation links *@
                     <ul class="navbar-nav flex-grow-1">
+
+                        <!-- Home -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Stocks" asp-action="Index">Stocks</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="About">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Contact">Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
 
-                        @* Admin-only Add Stock link *@
+                        <!-- Shop Management -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="shopDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Shops
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="shopDropdown">
+                                <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index">List Shops</a></li>
+                                <li><a class="dropdown-item" asp-controller="Shop" asp-action="Create">Create Shop</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- ShopStocks -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="shopStocksDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Shop Stocks
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="shopStocksDropdown">
+                                <li><a class="dropdown-item" asp-controller="ShopStocks" asp-action="Index">List Stocks</a></li>
+                                <li><a class="dropdown-item" asp-controller="ShopStocks" asp-action="Create">Add Stock</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Global Stocks -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="stocksDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Inventory
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="stocksDropdown">
+                                <li><a class="dropdown-item" asp-controller="Stocks" asp-action="Index">All Items</a></li>
+                                <li><a class="dropdown-item" asp-controller="Stocks" asp-action="Create">Create Item</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Shopping Carts -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="cartsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Carts
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="cartsDropdown">
+                                <li><a class="dropdown-item" asp-controller="ShoppingCarts" asp-action="Index">Manage Carts</a></li>
+                                <li><a class="dropdown-item" asp-controller="ShoppingCarts" asp-action="ViewCart">View Cart</a></li>
+                                <li><a class="dropdown-item" asp-controller="ShoppingCarts" asp-action="Checkout">Checkout</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- POS -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="posDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                POS
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="posDropdown">
+                                <li><a class="dropdown-item" asp-controller="POS" asp-action="Index">Main POS</a></li>
+                                <li><a class="dropdown-item" asp-controller="POS" asp-action="SelectShop">Select Shop</a></li>
+                                <li><a class="dropdown-item" asp-controller="POS" asp-action="SalesHistory">Sales History</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Administration -->
                         @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Stocks" asp-action="Create">Add Stock</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Administration
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Users</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Users" asp-action="Create">Create User</a></li>
+                                </ul>
                             </li>
                         }
-
-                        @* Admin-only Users management link *@
-                        @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a>
-                            </li>
-                        }
-
-                        @* Authenticated user's profile edit link *@
-                        @if (User?.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                @* Use NameIdentifier claim to route to profile edit *@
-                                <a class="nav-link text-dark" asp-controller="Users" asp-action="Edit" asp-route-id="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">My Profile</a>
-                            </li>
-                        }
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
                     </ul>
 
-                    @* User authentication links and greeting *@
                     <ul class="navbar-nav">
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" href="#">Hello @User.Identity.Name!</a>
+                                <span class="navbar-text text-dark me-2">Hello @User.Identity.Name!</span>
                             </li>
                             <li class="nav-item">
-                                <form class="form-inline" asp-area="" asp-controller="Users" asp-action="Logout" method="post" id="logoutForm">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                                <form asp-controller="Users" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link text-dark">Logout</button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Login">Login</a>
+                                <a class="nav-link text-dark" asp-controller="Users" asp-action="Login">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Register">Register</a>
+                                <a class="nav-link text-dark" asp-controller="Users" asp-action="Register">Register</a>
                             </li>
                         }
                     </ul>
@@ -116,15 +146,13 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - EasyGames - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - EasyGames - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
 
-    @* JavaScript references *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
